@@ -3,137 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SANTRIKU CLOUD AI 🧠</title>
+    <title>SANTRIKU CLOUD GLOBAL AI 🌍</title>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
         :root { --primary: #065f46; --secondary: #10b981; --accent: #fbbf24; --bg: #022c22; --card-bg: rgba(255, 255, 255, 0.08); }
         body { background: var(--bg); font-family: 'Segoe UI', sans-serif; color: white; margin: 0; padding: 15px; display: flex; justify-content: center; min-height: 100vh; }
         .container { width: 100%; max-width: 450px; }
-        .card { background: var(--card-bg); padding: 25px; border-radius: 24px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); }
-        input, select, textarea { width: 100%; padding: 14px; border-radius: 14px; border: 1px solid #ddd; margin: 10px 0; box-sizing: border-box; }
-        .btn { width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: 700; cursor: pointer; margin-top: 8px; }
+        .card { background: var(--card-bg); padding: 25px; border-radius: 24px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); box-shadow: 0 15px 35px rgba(0,0,0,0.4); }
+        input, select, textarea { width: 100%; padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); margin: 10px 0; box-sizing: border-box; background: white; color: #1f2937; }
+        .btn { width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-host { background: linear-gradient(135deg, var(--accent), #f59e0b); color: #022c22; }
+        .btn-join { background: linear-gradient(135deg, var(--secondary), #059669); color: white; }
         .btn-latihan { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; }
-        #play-area, #latihan-setup, #result-area { display: none; }
-        .opsi { display: block; width: 100%; padding: 16px; margin: 12px 0; border: 2px solid #e5e7eb; border-radius: 16px; background: white; text-align: left; color: #374151; cursor: pointer; }
+        .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; }
+        #play-area, #creator-area, #monitor-area, #auth-area, #latihan-setup, #result-area { display: none; }
+        .opsi { display: block; width: 100%; padding: 16px; margin: 12px 0; border: 2px solid #e5e7eb; border-radius: 16px; background: white; text-align: left; font-weight: 600; cursor: pointer; color: #374151; }
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 50px; font-size: 10px; font-weight: 900; background: rgba(255,255,255,0.1); margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="latihan-setup" style="display: block;">
+    <div id="setup-area">
+        <div style="text-align:center; padding: 20px 0;">
+            <h1 style="color:var(--accent); letter-spacing:-1px; margin:0">SANTRIKU CLOUD</h1>
+            <p style="opacity: 0.7; font-size: 12px;">POWERED BY GOOGLE AI 🧠</p>
+        </div>
+
         <div class="card">
-            <h2 style="color:var(--accent)">Smart AI Generator</h2>
-            <p style="font-size: 12px; opacity: 0.8;">Sistem akan membuat soal unik menggunakan teknologi LLM (seperti ChatGPT).</p>
+            <div class="badge" style="color: var(--accent);">GURU / PENGAJAR</div>
+            <button class="btn btn-host" onclick="showView('auth-area')">PANEL KONTROL GURU</button>
+        </div>
+
+        <div class="card">
+            <div class="badge" style="color: var(--secondary);">SANTRI / PESERTA</div>
+            <input type="text" id="input-nama" placeholder="Nama Lengkap Anda">
+            <input type="text" id="input-room" placeholder="ID Room Ujian">
+            <button class="btn btn-join" id="btn-gabung" onclick="joinRoom()">GABUNG UJIAN</button>
+        </div>
+
+        <div class="card">
+            <div class="badge" style="color: #a78bfa;">MENU CERDAS AI</div>
+            <button class="btn btn-latihan" onclick="showView('latihan-setup')">SIMULASI MANDIRI AI</button>
+        </div>
+    </div>
+
+    <div id="latihan-setup">
+        <div class="card">
+            <h3>Konfigurasi Otak AI</h3>
+            <label style="font-size:11px">GANTI INI DENGAN API KEY ANDA:</label>
+            <input type="password" id="api-key" value="DAPATKAN_DI_GOOGLE_AI_STUDIO" placeholder="Paste API Key Gemini di sini">
             
-            <label>Masukkan API KEY Gemini:</label>
-            <input type="password" id="api-key" placeholder="Tempel API Key di sini...">
+            <label style="font-size:11px">Mata Pelajaran Spesifik:</label>
+            <input type="text" id="ai-mapel" placeholder="Contoh: Tajwid, Sejarah Wali Songo, Matematika...">
             
-            <label>Mata Pelajaran:</label>
-            <input type="text" id="ai-mapel" placeholder="Contoh: Sejarah Dunia, Fisika Kuantum...">
-            
-            <label>Tingkatan:</label>
+            <label style="font-size:11px">Tingkatan Pendidikan:</label>
             <select id="ai-level">
-                <option value="SD">SD (Bahasa Sederhana)</option>
-                <option value="SMP">SMP</option>
-                <option value="SMA">SMA</option>
-                <option value="Perguruan Tinggi">Kuliah (Analisis Berat)</option>
+                <option value="SD">Sekolah Dasar (Sederhana)</option>
+                <option value="SMP">SMP / MTs</option>
+                <option value="SMA">SMA / MA</option>
+                <option value="S1">Universitas (Analisis Kritis)</option>
             </select>
-            
-            <button class="btn btn-latihan" id="btn-generate" onclick="generateWithAI()">GENERATE SOAL DENGAN AI</button>
+
+            <button class="btn btn-latihan" id="btn-ai" onclick="generateAISoal()">MULAI GENERATE SOAL AI</button>
+            <button class="btn btn-outline" onclick="location.reload()">KEMBALI</button>
         </div>
     </div>
 
     <div id="play-area">
-        <div class="card" style="background: white; color: #333;">
-            <div id="progress-text" style="color: var(--primary); font-weight: bold;"></div>
-            <h3 id="txt-soal"></h3>
+        <div id="quiz-box" class="card" style="background: white; color: #1f2937;">
+            <div id="info-mapel" style="font-weight:bold; color:var(--primary); font-size:12px"></div>
+            <h3 id="txt-soal" style="margin-top:10px">Sedang memproses...</h3>
             <div id="list-opsi"></div>
+        </div>
+    </div>
+
+    <div id="auth-area">
+        <div class="card">
+            <h2>Panel Guru</h2>
+            <input type="email" id="auth-email" placeholder="Email">
+            <input type="password" id="auth-pass" placeholder="Password">
+            <button class="btn btn-join" onclick="handleLogin()">MASUK</button>
+            <button class="btn btn-outline" onclick="location.reload()">BATAL</button>
         </div>
     </div>
 </div>
 
 <script>
-    let bankSoal = [];
-    let currentIdx = 0;
+    // --- KONFIGURASI ---
+    const firebaseConfig = { apiKey: "AIzaSyBDvWZ_cfzTFOx7OujsxpyxD13TD1RWSDM", authDomain: "santriku-cloud.firebaseapp.com", projectId: "santriku-cloud" };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    
+    let bankSoal = [], currentIdx = 0;
 
-    async function generateWithAI() {
+    function showView(id) {
+        document.querySelectorAll('.container > div').forEach(d => d.style.display = 'none');
+        document.getElementById(id).style.display = 'block';
+    }
+
+    // --- FUNGSI UTAMA: GENERATE SOAL PINTAR (AI) ---
+    async function generateAISoal() {
         const apiKey = document.getElementById('api-key').value;
         const mapel = document.getElementById('ai-mapel').value;
         const level = document.getElementById('ai-level').value;
-        const btn = document.getElementById('btn-generate');
+        const btn = document.getElementById('btn-ai');
 
-        if (!apiKey || !mapel) return alert("API Key dan Mapel wajib diisi!");
+        if(apiKey === "DAPATKAN_DI_GOOGLE_AI_STUDIO") return alert("Harap masukkan API Key Gemini Anda!");
+        if(!mapel) return alert("Isi mata pelajaran!");
 
         btn.disabled = true;
-        btn.innerText = "AI SEDANG BERPIKIR...";
+        btn.innerText = "AI SEDANG MENYUSUN SOAL...";
 
-        // Prompt (Perintah) untuk AI agar memberikan hasil dalam format JSON yang bisa dibaca sistem
-        const prompt = `Buatkan 5 soal pilihan ganda tentang ${mapel} untuk tingkat ${level}. 
-        Berikan jawaban dalam format JSON murni (array of objects) dengan struktur: 
-        [{"p": "pertanyaan", "o": ["jawaban benar", "salah1", "salah2", "salah3"]}]. 
-        Jangan berikan penjelasan apapun selain JSON.`;
+        // PROMPT AGAR AI MENGERTI MAKSUD ANDA
+        const prompt = `Buatkan 5 soal pilihan ganda yang sangat bervariasi dan tidak membosankan tentang ${mapel} untuk tingkat ${level}. 
+        Setiap soal harus menantang sesuai tingkatannya. 
+        Berikan jawaban dalam format JSON murni: [{"p":"pertanyaan","o":["jawaban benar","salah1","salah2","salah3"]}]. 
+        Pastikan jawaban benar selalu di indeks pertama (0) dalam array 'o'. Jangan ada teks penjelasan lain.`;
 
         try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }]
-                })
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
 
             const data = await response.json();
-            const aiText = data.candidates[0].content.parts[0].text;
+            const resText = data.candidates[0].content.parts[0].text;
+            const cleanJson = resText.replace(/```json|```/g, "").trim();
             
-            // Membersihkan teks dari markdown jika AI menyertakannya
-            const cleanJson = aiText.replace(/```json|```/g, "").trim();
             bankSoal = JSON.parse(cleanJson);
-
+            document.getElementById('info-mapel').innerText = "UJIAN AI: " + mapel.toUpperCase();
             startQuiz();
-        } catch (error) {
-            console.error(error);
-            alert("Gagal memanggil AI. Pastikan API Key benar.");
+
+        } catch (e) {
+            alert("Koneksi AI Gagal: " + e.message);
         } finally {
             btn.disabled = false;
-            btn.innerText = "GENERATE SOAL DENGAN AI";
+            btn.innerText = "MULAI GENERATE SOAL AI";
         }
     }
 
     function startQuiz() {
-        document.getElementById('latihan-setup').style.display = 'none';
-        document.getElementById('play-area').style.display = 'block';
+        showView('play-area');
         currentIdx = 0;
         renderSoal();
     }
 
     function renderSoal() {
-        if (currentIdx >= bankSoal.length) {
-            alert("Ujian selesai!");
+        if(currentIdx >= bankSoal.length) {
+            confetti({ particleCount: 150 });
+            alert("Latihan Selesai!");
             location.reload();
             return;
         }
 
         const s = bankSoal[currentIdx];
-        document.getElementById('progress-text').innerText = `Soal ${currentIdx + 1} dari ${bankSoal.length}`;
         document.getElementById('txt-soal').innerText = s.p;
-        
         const list = document.getElementById('list-opsi');
         list.innerHTML = "";
 
-        // Acak posisi pilihan
-        let options = s.o.map((txt, i) => ({ txt, isCorrect: i === 0 })).sort(() => Math.random() - 0.5);
+        // Acak tampilan opsi
+        let shuffled = s.o.map((txt, i) => ({txt, isCorrect: i === 0})).sort(() => Math.random() - 0.5);
 
-        options.forEach(opt => {
+        shuffled.forEach(opt => {
             const b = document.createElement('button');
             b.className = "opsi";
             b.innerText = opt.txt;
             b.onclick = () => {
-                if (opt.isCorrect) alert("Benar!");
-                else alert("Salah!");
-                currentIdx++;
-                renderSoal();
+                if(opt.isCorrect) {
+                    alert("Tepat Sekali! ✅");
+                    currentIdx++;
+                    renderSoal();
+                } else {
+                    alert("Kurang Tepat. Coba lagi! ❌");
+                }
             };
             list.appendChild(b);
         });
+    }
+
+    // Fungsi Guru (HandleLogin) tetap ada
+    async function handleLogin() {
+        try { 
+            await auth.signInWithEmailAndPassword(document.getElementById('auth-email').value, document.getElementById('auth-pass').value); 
+            alert("Berhasil masuk!");
+        } catch(e) { 
+            alert("Gagal Login."); 
+        }
     }
 </script>
 </body>
