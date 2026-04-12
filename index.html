@@ -35,7 +35,7 @@
         .opsi { display: block; width: 100%; padding: 16px; margin: 12px 0; border: 2px solid #e5e7eb; border-radius: 16px; background: white; text-align: left; font-weight: 600; cursor: pointer; color: #374151; }
         .badge { display: inline-block; padding: 4px 12px; border-radius: 50px; font-size: 10px; font-weight: 900; background: rgba(255,255,255,0.1); margin-bottom: 10px; }
         .stat-circle { width: 100px; height: 100px; border-radius: 50%; border: 5px solid var(--secondary); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; margin: 20px auto; color: var(--primary); background: white; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; color: #333; background: white; border-radius: 8px; overflow: hidden; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
         th { background: #f3f4f6; }
     </style>
@@ -166,6 +166,7 @@
 </div>
 
 <script>
+    // --- CONFIG & GLOBAL VARS ---
     const firebaseConfig = { apiKey: "AIzaSyBDvWZ_cfzTFOx7OujsxpyxD13TD1RWSDM", authDomain: "santriku-cloud.firebaseapp.com", projectId: "santriku-cloud" };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
@@ -178,12 +179,14 @@
         document.getElementById(id).style.display = 'block';
     }
 
+    // --- LOGIKA SISWA (PEERJS JOIN) ---
     function joinRoom() {
         const rid = document.getElementById('input-room').value.trim().toLowerCase();
         const nama = document.getElementById('input-nama').value.trim();
         if(!rid || !nama) return alert("Isi Nama dan ID Room!");
         const btn = document.getElementById('btn-gabung');
         btn.disabled = true; btn.innerText = "MENGHUBUNGKAN...";
+        
         if(peer) peer.destroy();
         peer = new Peer(peerOptions);
         peer.on('open', () => {
@@ -201,6 +204,7 @@
         peer.on('error', () => { alert("Koneksi gagal!"); location.reload(); });
     }
 
+    // --- LOGIKA AI (GENERATOR TANPA BATAS) ---
     function generateAISoal() {
         const level = document.getElementById('ai-level').value;
         const jml = parseInt(document.getElementById('ai-jumlah').value);
@@ -210,79 +214,36 @@
         const mapel = mapelRaw.toUpperCase();
         bankSoal = [];
 
-        // DYNAMIC AI GENERATOR ENGINE
-        const createSmartQuestion = (topic) => {
-            const templates = [
-                {
-                    q: `Dalam studi ${topic}, manakah faktor yang paling mendasar untuk dipahami terlebih dahulu?`,
-                    a: `Prinsip dasar dan landasan teori ${topic}`,
-                    w: [`Asumsi tanpa data baku`, `Hasil akhir tanpa proses`, `Opini dari pihak luar`]
-                },
-                {
-                    q: `Secara sistematis, penerapan ${topic} yang benar harus mengedepankan aspek...`,
-                    a: `Validitas dan Integritas data`,
-                    w: [`Kecepatan tanpa akurasi`, `Popularitas subjek`, `Penghematan biaya total`]
-                },
-                {
-                    q: `Apa dampak jangka panjang jika ${topic} tidak diimplementasikan dengan standar yang berlaku?`,
-                    a: `Penurunan kualitas hasil dan ketidakefisienan`,
-                    w: [`Peningkatan keuntungan instan`, `Stabilitas sistem tetap terjaga`, `Tidak ada dampak yang signifikan`]
-                },
-                {
-                    q: `Kompetensi utama yang dibutuhkan dalam menguasai ${topic} di era digital adalah...`,
-                    a: `Kemampuan analisis dan adaptasi teknologi`,
-                    w: [`Menghafal seluruh materi tanpa praktik`, `Kekuatan fisik yang besar`, `Koneksi jaringan sosial saja`]
-                },
-                {
-                    q: `Manakah dari berikut ini yang merupakan contoh penerapan nyata dari ${topic}?`,
-                    a: `Implementasi terstruktur di lapangan`,
-                    w: [`Wacana tanpa realisasi`, `Pengabaian prosedur operasional`, `Teori yang sudah kadaluwarsa`]
-                }
-            ];
+        const prefixes = ["Secara sistematis,", "Menurut perspektif akademis,", "Dalam konteks nyata,", "Berdasarkan standar kompetensi,", "Dilihat dari teori dasar,"];
+        const logicTemplates = [
+            { q: "Apa yang menjadi pilar utama dalam pemahaman {topic}?", a: "Integrasi konsep fundamental dan analisis terstruktur", w: ["Pengabaian detail teknis", "Hanya mengandalkan spekulasi", "Dokumentasi tanpa praktik"] },
+            { q: "Bagaimana cara memvalidasi keberhasilan penerapan {topic}?", a: "Melalui evaluasi data objektif dan konsistensi hasil", w: ["Berdasarkan popularitas semata", "Mengikuti tren tanpa dasar teori", "Mengabaikan standar operasional"] },
+            { q: "Elemen manakah yang paling krusial untuk menjaga integritas {topic}?", a: "Kepatuhan terhadap metodologi dan etika profesi", w: ["Kecepatan penyelesaian tugas", "Efisiensi biaya di atas kualitas", "Otomasi tanpa pengawasan"] }
+        ];
 
-            const prefixes = ["Berdasarkan kurikulum,", "Dilihat dari sudut pandang profesional,", "Secara akademis,", "Dalam konteks nyata,", "Menurut para ahli,"];
-            const t = templates[Math.floor(Math.random() * templates.length)];
-            const p = prefixes[Math.floor(Math.random() * prefixes.length)];
-
-            return {
-                p: `${p} ${t.q}`,
-                b: t.a,
-                s: t.w
-            };
-        };
-
-        // Static backup for common subjects
-        const staticDB = {
-            TK: [
-                {p: "Apa warna bendera Indonesia?", b: "Merah Putih", s: ["Hijau Kuning", "Biru", "Hitam"]},
-                {p: "Satu tambah satu sama dengan?", b: "Dua", s: ["Tiga", "Empat", "Satu"]}
-            ],
-            AGAMA: [
-                {p: "Siapa pencipta alam semesta?", b: "Allah SWT", s: ["Malaikat", "Manusia", "Robot"]},
-                {p: "Kitab suci umat Islam adalah?", b: "Al-Qur'an", s: ["Buku Gambar", "Majalah", "Koran"]}
-            ]
-        };
+        const tkBank = [
+            {p: "Apa warna langit saat cerah?", b: "Biru", s: ["Hitam", "Hijau", "Merah"]},
+            {p: "Hewan apa yang bertelur?", b: "Ayam", s: ["Kucing", "Sapi", "Anjing"]}
+        ];
 
         for(let i = 0; i < jml; i++) {
-            let res;
             if(level === 'tk') {
-                res = staticDB.TK[Math.floor(Math.random() * staticDB.TK.length)];
-            } else if (mapel.includes("AQIDAH") || mapel.includes("ISLAM") || mapel.includes("AGAMA")) {
-                res = staticDB.AGAMA[Math.floor(Math.random() * staticDB.AGAMA.length)];
+                let res = tkBank[Math.floor(Math.random() * tkBank.length)];
+                bankSoal.push({ p: res.p, o: [res.b, ...res.s] });
             } else {
-                res = createSmartQuestion(mapel);
+                let p = prefixes[Math.floor(Math.random() * prefixes.length)];
+                let t = logicTemplates[Math.floor(Math.random() * logicTemplates.length)];
+                bankSoal.push({ 
+                    p: `${p} ${t.q.replace(/{topic}/g, mapel)}`.toUpperCase(), 
+                    o: [t.a.replace(/{topic}/g, mapel), ...t.w.map(w => w.replace(/{topic}/g, mapel))] 
+                });
             }
-
-            bankSoal.push({ 
-                p: `(${mapel}) ${res.p}`, 
-                o: [res.b, ...res.s] 
-            });
         }
-
         document.getElementById('info-mapel').innerText = "AI SIMULASI: " + mapel;
         startQuiz();
     }
 
+    // --- LOGIKA GAMEPLAY ---
     function startQuiz() {
         currentIdx = 0; statBenar = 0; startTime = Date.now();
         showView('play-area'); renderSoal();
@@ -319,6 +280,7 @@
         document.getElementById('res-grade').innerText = skor >= 70 ? "JAYYID" : "BELAJAR LAGI";
     }
 
+    // --- LOGIKA GURU (AUTH & HOSTING) ---
     async function handleLogin() {
         try { await auth.signInWithEmailAndPassword(document.getElementById('auth-email').value, document.getElementById('auth-pass').value); showView('creator-area'); } catch(e) { alert("Login Gagal!"); }
     }
