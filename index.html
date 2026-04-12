@@ -165,7 +165,6 @@
 </div>
 
 <script>
-    // --- CONFIG & GLOBAL VARS ---
     const firebaseConfig = { apiKey: "AIzaSyBDvWZ_cfzTFOx7OujsxpyxD13TD1RWSDM", authDomain: "santriku-cloud.firebaseapp.com", projectId: "santriku-cloud" };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
@@ -178,7 +177,6 @@
         document.getElementById(id).style.display = 'block';
     }
 
-    // --- LOGIKA SISWA ---
     function joinRoom() {
         const rid = document.getElementById('input-room').value.trim().toLowerCase();
         const nama = document.getElementById('input-nama').value.trim();
@@ -203,49 +201,39 @@
         peer.on('error', () => { alert("Koneksi gagal!"); location.reload(); });
     }
 
-    // --- LOGIKA AI (Backend Bridge) ---
-  async function generateAISoal() {
-    const mapel = document.getElementById('ai-mapel').value.trim();
-    const level = document.getElementById('ai-level').value;
-    const jml = document.getElementById('ai-jumlah').value;
-    const btn = document.getElementById('btn-ai-start');
+    // --- LOGIKA AI (Backend Bridge: AMAN UNTUK GITHUB) ---
+    async function generateAISoal() {
+        const mapel = document.getElementById('ai-mapel').value.trim();
+        const level = document.getElementById('ai-level').value;
+        const jml = document.getElementById('ai-jumlah').value;
+        const btn = document.getElementById('btn-ai-start');
 
-    if(!mapel) return alert("Harap isi mata pelajaran!");
+        if(!mapel) return alert("Harap isi mata pelajaran!");
 
-    // MASUKKAN API KEY ANDA DI SINI UNTUK TES
-    const KEY_PRIVATE = "MASUKKAN_API_KEY_GOOGLE_ANDA_DISINI"; 
+        btn.disabled = true;
+        btn.innerText = "AI SEDANG BERPIKIR...";
 
-    btn.disabled = true;
-    btn.innerText = "AI SEDANG BERPIKIR...";
+        try {
+            // GANTI URL INI DENGAN LINK VERCEL ANDA NANTI
+            const response = await fetch(`https://ALAMAT_BACKEND_ANDA.vercel.app/api/generate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ subject: mapel, level: level, count: jml })
+            });
 
-    const prompt = `Buatkan ${jml} soal pilihan ganda tentang ${mapel} untuk tingkat ${level}. 
-    Berikan jawaban dalam format JSON murni: [{"p": "pertanyaan", "o": ["jawaban benar", "salah1", "salah2", "salah3"]}]. 
-    PENTING: Jawaban benar harus selalu di urutan pertama (indeks 0). Jangan berikan teks lain selain JSON.`;
+            const data = await response.json();
+            bankSoal = data.questions; 
+            document.getElementById('info-mapel').innerText = "AI SIMULASI: " + mapel.toUpperCase();
+            startQuiz();
 
-    try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${KEY_PRIVATE}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-        });
-
-        const data = await response.json();
-        const resText = data.candidates[0].content.parts[0].text;
-        const cleanJson = resText.replace(/```json|```/g, "").trim();
-        
-        bankSoal = JSON.parse(cleanJson);
-        document.getElementById('info-mapel').innerText = "AI SIMULASI: " + mapel.toUpperCase();
-        startQuiz();
-
-    } catch (e) {
-        alert("Gagal terhubung ke AI. Periksa API Key atau internet Anda.");
-    } finally {
-        btn.disabled = false;
-        btn.innerText = "JALANKAN KECERDASAN AI";
+        } catch (e) {
+            alert("Sistem AI saat ini dalam pemeliharaan (Backend belum aktif).");
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "JALANKAN KECERDASAN AI";
+        }
     }
-}
 
-    // --- LOGIKA GAMEPLAY ---
     function startQuiz() {
         currentIdx = 0; statBenar = 0; startTime = Date.now();
         showView('play-area'); renderSoal();
@@ -284,7 +272,6 @@
         document.getElementById('res-grade').innerText = skor >= 75 ? "MUMTAZ" : (skor >= 60 ? "JAYYID" : "RASIB");
     }
 
-    // --- LOGIKA GURU ---
     async function handleLogin() {
         try { await auth.signInWithEmailAndPassword(document.getElementById('auth-email').value, document.getElementById('auth-pass').value); showView('creator-area'); } catch(e) { alert("Login Gagal!"); }
     }
