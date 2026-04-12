@@ -210,38 +210,86 @@
         const mapel = mapelRaw.toUpperCase();
         bankSoal = [];
 
+        // Database soal yang diperluas agar tidak membosankan
         const soalMaster = {
             tk: [
                 {p: "Apa warna bendera Indonesia?", b: "Merah Putih", s: ["Hijau Kuning", "Biru", "Hitam"]},
                 {p: "Siapa pencipta kita?", b: "Allah SWT", s: ["Malaikat", "Manusia", "Robot"]},
                 {p: "Satu tambah satu sama dengan?", b: "Dua", s: ["Tiga", "Empat", "Satu"]},
-                {p: "Sebelum makan kita membaca?", b: "Doa", s: ["Buku", "Koran", "Nyanyian"]}
+                {p: "Sebelum makan kita membaca?", b: "Doa", s: ["Buku", "Koran", "Nyanyian"]},
+                {p: "Mana yang termasuk hewan kurban?", b: "Sapi", s: ["Kucing", "Ayam", "Kelinci"]},
+                {p: "Surah Al-Fatihah terdiri dari berapa ayat?", b: "7 ayat", s: ["5 ayat", "10 ayat", "3 ayat"]},
+                {p: "Tempat ibadah umat Islam adalah?", b: "Masjid", s: ["Gereja", "Pura", "Pasar"]},
+                {p: "Matahari terbit dari sebelah?", b: "Timur", s: ["Barat", "Selatan", "Utara"]},
+                {p: "Puasa dilakukan pada bulan?", b: "Ramadhan", s: ["Syawal", "Januari", "Senin"]},
+                {p: "Kitab suci umat Islam adalah?", b: "Al-Qur'an", s: ["Buku Gambar", "Koran", "Majalah"]}
             ],
             sd: [
                 {p: "Rukun Islam yang kedua adalah?", b: "Shalat", s: ["Zakat", "Puasa", "Syahadat"]},
                 {p: "Ibu kota negara Indonesia adalah?", b: "Jakarta", s: ["Surabaya", "Bandung", "Kendari"]},
-                {p: "Nabi yang memiliki mukjizat membelah lautan?", b: "Nabi Musa AS", s: ["Nabi Isa AS", "Nabi Nuh AS", "Nabi Daud AS"]}
+                {p: "Nabi yang memiliki mukjizat membelah lautan?", b: "Nabi Musa AS", s: ["Nabi Isa AS", "Nabi Nuh AS", "Nabi Daud AS"]},
+                {p: "Siapa malaikat yang bertugas menyampaikan wahyu?", b: "Jibril", s: ["Mikail", "Israil", "Ridwan"]},
+                {p: "Surah terpendek dalam Al-Qur'an adalah?", b: "Al-Kautsar", s: ["Al-Ikhlas", "An-Nas", "Al-Baqarah"]},
+                {p: "Rukun Iman berjumlah?", b: "6", s: ["5", "10", "12"]},
+                {p: "Sifat wajib Rasul yang artinya Jujur adalah?", b: "Shiddiq", s: ["Amanah", "Tabligh", "Fathonah"]},
+                {p: "Peristiwa turunnya Al-Qur'an disebut?", b: "Nuzulul Qur'an", s: ["Isra Mi'raj", "Maulid Nabi", "Tahun Baru Hijriah"]},
+                {p: "Shalat yang dilakukan sebelum matahari terbit adalah?", b: "Subuh", s: ["Dzuhur", "Ashar", "Maghrib"]},
+                {p: "Nabi terakhir utusan Allah adalah?", b: "Nabi Muhammad SAW", s: ["Nabi Ibrahim AS", "Nabi Adam AS", "Nabi Sulaiman AS"]}
             ],
             mts: [
                 {p: "Siapa khalifah pertama setelah wafatnya Rasulullah?", b: "Abu Bakar Ash-Shiddiq", s: ["Umar bin Khattab", "Utsman bin Affan", "Ali bin Abi Thalib"]},
-                {p: "Hukum bacaan Nun mati bertemu huruf Ba disebut?", b: "Iqlab", s: ["Idgham", "Ikhfa", "Izhar"]}
+                {p: "Hukum bacaan Nun mati bertemu huruf Ba disebut?", b: "Iqlab", s: ["Idgham", "Ikhfa", "Izhar"]},
+                {p: "Zakat mal wajib dikeluarkan jika harta sudah mencapai?", b: "Nisab", s: ["Target", "Limit", "Hibah"]},
+                {p: "Kitab Hadits yang paling shahih disusun oleh?", b: "Imam Bukhari", s: ["Imam Syafi'i", "Imam Gazali", "Ibnu Sina"]},
+                {p: "Perang besar pertama umat Islam adalah?", b: "Perang Badar", s: ["Perang Uhud", "Perang Khandaq", "Perang Khaibar"]},
+                {p: "Haji wajib dilakukan bagi yang?", b: "Mampu", s: ["Mau", "Kaya saja", "Laki-laki"]},
+                {p: "Berapa jumlah usul fiqh yang utama?", b: "4", s: ["5", "2", "10"]},
+                {p: "Tahun gajah adalah tahun kelahiran?", b: "Nabi Muhammad SAW", s: ["Nabi Musa AS", "Nabi Isa AS", "Nabi Nuh AS"]},
+                {p: "Puasa Sunnah Senin Kamis hukumnya?", b: "Sunnah Muakkad", s: ["Wajib", "Haram", "Makruh"]},
+                {p: "Kota tempat Nabi Muhammad SAW hijrah adalah?", b: "Madinah", s: ["Mesir", "Yaman", "Turki"]}
             ],
             sma: [
                 {p: "Apa istilah bagi ilmu yang mempelajari tata cara membaca Al-Qur'an?", b: "Tajwid", s: ["Fikih", "Aqidah", "Nahwu"]},
-                {p: "Sifat wajib bagi Allah yang berarti Terdahulu adalah?", b: "Qidam", s: ["Wujud", "Baqa", "Iradat"]}
+                {p: "Sifat wajib bagi Allah yang berarti Terdahulu adalah?", b: "Qidam", s: ["Wujud", "Baqa", "Iradat"]},
+                {p: "Sumber hukum Islam yang disepakati oleh para ulama adalah?", b: "Ijma", s: ["Ijtihad", "Urf", "Istihsan"]},
+                {p: "Ilmu yang mempelajari tentang hukum-hukum ibadah disebut?", b: "Fikih", s: ["Tauhid", "Tasawuf", "Akhlak"]},
+                {p: "Pembagian warisan dalam Islam disebut ilmu?", b: "Faraid", s: ["Muamalah", "Munakahat", "Jinayat"]},
+                {p: "Kekuasaan penuh Allah atas segala sesuatu disebut?", b: "Qudrat", s: ["Iradat", "Sama'", "Bashar"]},
+                {p: "Khalifah yang dikenal dengan gelar Zun Nurain adalah?", b: "Utsman bin Affan", s: ["Umar bin Khattab", "Ali bin Abi Thalib", "Abu Bakar"]},
+                {p: "Surah yang menceritakan tentang keesaan Allah adalah?", b: "Al-Ikhlas", s: ["Al-Fatihah", "Al-Mulk", "Yasin"]},
+                {p: "Ibadah yang menjadi tiang agama adalah?", b: "Shalat", s: ["Haji", "Sedekah", "Zikir"]},
+                {p: "Apa hukum mempelajari ilmu Tajwid?", b: "Fardu Kifayah", s: ["Fardu Ain", "Haram", "Makruh"]}
             ],
             s1: [
                 {p: "Metode ijtihad dengan membandingkan masalah baru dengan masalah lama disebut?", b: "Qiyas", s: ["Ijma", "Urf", "Istihsan"]},
-                {p: "Tafsir yang menekankan pada aspek kebahasaan dan sastra disebut?", b: "Tafsir Lughawi", s: ["Tafsir Bil Ma'tsur", "Tafsir Isyari", "Tafsir Falsafi"]}
+                {p: "Tafsir yang menekankan pada aspek kebahasaan dan sastra disebut?", b: "Tafsir Lughawi", s: ["Tafsir Bil Ma'tsur", "Tafsir Isyari", "Tafsir Falsafi"]},
+                {p: "Kitab Ar-Risalah yang merupakan pionir ilmu Ushul Fiqh ditulis oleh?", b: "Imam Syafi'i", s: ["Imam Maliki", "Imam Hanafi", "Imam Hambali"]},
+                {p: "Kaidah 'Al-Umuuru bi Maqaashidiha' berarti?", b: "Segala perkara tergantung tujuannya", s: ["Keyakinan tidak hilang oleh keraguan", "Kemudaratan harus dihilangkan", "Adat bisa menjadi hukum"]},
+                {p: "Aliran teologi yang mengedepankan akal (rasionalisme) adalah?", b: "Mu'tazilah", s: ["Asy'ariyah", "Maturidiyah", "Jabariyah"]},
+                {p: "Tujuan utama syariat Islam disebut dengan istilah?", b: "Maqashid Syariah", s: ["Maslahah Mursalah", "Saddudz Dzari'ah", "Istishab"]},
+                {p: "Siapakah tokoh utama tasawuf falsafi?", b: "Ibnu Arabi", s: ["Imam Al-Ghazali", "Hasan Al-Bashri", "Rabiah Al-Adawiyah"]},
+                {p: "Periode pengumpulan hadits secara resmi dimulai pada masa?", b: "Umar bin Abdul Aziz", s: ["Harun Al-Rasyid", "Al-Ma'mun", "Abu Bakar"]},
+                {p: "Hukum asal dalam ibadah adalah?", b: "Haram sampai ada dalil perintah", s: ["Boleh sampai ada dalil larangan", "Wajib semuanya", "Mubazir"]},
+                {p: "Apa yang dimaksud dengan Hadits Mutawatir?", b: "Diriwayatkan oleh banyak orang", s: ["Hanya satu orang", "Hadits palsu", "Hadits lemah"]}
             ]
         };
 
-        let selectedPool = [...soalMaster[level]].map(item => ({ p: `(${mapel}) ${item.p}`, b: item.b, s: item.s }));
-        selectedPool.sort(() => Math.random() - 0.5);
+        // Perbaikan Logika Pengacakan dan Pengambilan Soal
+        let pool = [...soalMaster[level]];
+        
+        // Acak seluruh isi kolam soal agar urutan tidak selalu sama
+        pool.sort(() => Math.random() - 0.5);
 
-        for(let i = 0; i < Math.min(jml, selectedPool.length); i++) {
-            bankSoal.push({ p: selectedPool[i].p, o: [selectedPool[i].b, ...selectedPool[i].s] });
+        // Ambil soal sebanyak yang diinput user (misal 10) atau maksimal yang tersedia
+        let totalSoalDiambil = Math.min(jml, pool.length);
+
+        for(let i = 0; i < totalSoalDiambil; i++) {
+            bankSoal.push({ 
+                p: `(${mapel}) ${pool[i].p}`, 
+                o: [pool[i].b, ...pool[i].s] 
+            });
         }
+
         document.getElementById('info-mapel').innerText = "LATIHAN AI: " + mapel;
         startQuiz();
     }
