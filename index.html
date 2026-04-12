@@ -3,306 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SANTRIKU CLOUD GLOBAL 🌍</title>
-
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="Santriku Cloud">
-    <meta name="theme-color" content="#022c22">
-    
-    <link rel="icon" type="image/png" href="https://via.placeholder.com/192/fbbf24/022c22?text=NOVA">
-    <link rel="apple-touch-icon" href="https://via.placeholder.com/192/fbbf24/022c22?text=NOVA">
-
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+    <title>SANTRIKU CLOUD AI 🧠</title>
     <style>
         :root { --primary: #065f46; --secondary: #10b981; --accent: #fbbf24; --bg: #022c22; --card-bg: rgba(255, 255, 255, 0.08); }
         body { background: var(--bg); font-family: 'Segoe UI', sans-serif; color: white; margin: 0; padding: 15px; display: flex; justify-content: center; min-height: 100vh; }
         .container { width: 100%; max-width: 450px; }
-        .card { background: var(--card-bg); padding: 25px; border-radius: 24px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); box-shadow: 0 15px 35px rgba(0,0,0,0.4); animation: fadeIn 0.5s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        input, select, textarea { width: 100%; padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); margin: 10px 0; box-sizing: border-box; background: white; color: #1f2937; font-size: 15px; outline: none; }
-        .btn { width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 8px; font-size: 14px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .btn-host { background: linear-gradient(135deg, var(--accent), #f59e0b); color: #022c22; }
-        .btn-join { background: linear-gradient(135deg, var(--secondary), #059669); color: white; }
+        .card { background: var(--card-bg); padding: 25px; border-radius: 24px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); }
+        input, select, textarea { width: 100%; padding: 14px; border-radius: 14px; border: 1px solid #ddd; margin: 10px 0; box-sizing: border-box; }
+        .btn { width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: 700; cursor: pointer; margin-top: 8px; }
         .btn-latihan { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; }
-        .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; }
-        #play-area, #creator-area, #monitor-area, #auth-area, #latihan-setup, #result-area { display: none; }
-        .opsi { display: block; width: 100%; padding: 16px; margin: 12px 0; border: 2px solid #e5e7eb; border-radius: 16px; background: white; text-align: left; font-weight: 600; cursor: pointer; color: #374151; }
-        .badge { display: inline-block; padding: 4px 12px; border-radius: 50px; font-size: 10px; font-weight: 900; background: rgba(255,255,255,0.1); margin-bottom: 10px; }
-        .stat-circle { width: 100px; height: 100px; border-radius: 50%; border: 5px solid var(--secondary); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; margin: 20px auto; color: var(--primary); background: white; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; color: #333; background: white; border-radius: 8px; overflow: hidden; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        th { background: #f3f4f6; }
+        #play-area, #latihan-setup, #result-area { display: none; }
+        .opsi { display: block; width: 100%; padding: 16px; margin: 12px 0; border: 2px solid #e5e7eb; border-radius: 16px; background: white; text-align: left; color: #374151; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="setup-area">
-        <div style="text-align:center; padding: 20px 0;">
-            <div style="background: var(--accent); width: 60px; height: 60px; border-radius: 18px; display: inline-flex; align-items: center; justify-content: center; transform: rotate(-10deg); margin-bottom: 10px;">
-                <i class="fas fa-university fa-2x" style="color:#022c22; transform: rotate(10deg);"></i>
-            </div>
-            <h1 style="color:var(--accent); letter-spacing:-1px; margin:0">SANTRIKU CLOUD</h1>
-            <p style="opacity: 0.7; font-size: 12px;">EDUKASI DIGITAL GLOBAL 🌍</p>
-        </div>
-
+    <div id="latihan-setup" style="display: block;">
         <div class="card">
-            <div class="badge" style="color: var(--accent);">GURU / PENGAJAR</div>
-            <button class="btn btn-host" onclick="showView('auth-area')">PANEL KONTROL GURU</button>
-        </div>
-
-        <div class="card">
-            <div class="badge" style="color: var(--secondary);">SANTRI / PESERTA</div>
-            <input type="text" id="input-nama" placeholder="Nama Lengkap Anda">
-            <input type="text" id="input-room" placeholder="ID Room (Contoh: ujian123)">
-            <button class="btn btn-join" id="btn-gabung" onclick="joinRoom()">GABUNG UJIAN</button>
-        </div>
-
-        <div class="card">
-            <div class="badge" style="color: #a78bfa;">MENU 3: CERDAS AI</div>
-            <button class="btn btn-latihan" onclick="showView('latihan-setup')">SIMULASI MANDIRI AI</button>
-        </div>
-    </div>
-
-    <div id="latihan-setup">
-        <div class="card">
-            <h3>Konfigurasi AI</h3>
-            <label style="font-size:12px">Mata Pelajaran:</label>
-            <input type="text" id="ai-mapel" placeholder="Contoh: Aqidah, Tafsir, Ulumul Quran...">
-            <label style="font-size:12px">Tingkatan Pendidikan:</label>
+            <h2 style="color:var(--accent)">Smart AI Generator</h2>
+            <p style="font-size: 12px; opacity: 0.8;">Sistem akan membuat soal unik menggunakan teknologi LLM (seperti ChatGPT).</p>
+            
+            <label>Masukkan API KEY Gemini:</label>
+            <input type="password" id="api-key" placeholder="Tempel API Key di sini...">
+            
+            <label>Mata Pelajaran:</label>
+            <input type="text" id="ai-mapel" placeholder="Contoh: Sejarah Dunia, Fisika Kuantum...">
+            
+            <label>Tingkatan:</label>
             <select id="ai-level">
-                <option value="tk">TK / PAUD</option>
-                <option value="sd">SD / MI</option>
-                <option value="mts">SMP / MTs</option>
-                <option value="sma">SMA / MA / SMK</option>
-                <option value="s1">Perguruan Tinggi (S1)</option>
+                <option value="SD">SD (Bahasa Sederhana)</option>
+                <option value="SMP">SMP</option>
+                <option value="SMA">SMA</option>
+                <option value="Perguruan Tinggi">Kuliah (Analisis Berat)</option>
             </select>
-            <label style="font-size:12px">Jumlah Soal:</label>
-            <input type="number" id="ai-jumlah" value="5" min="1" max="20">
-            <button class="btn btn-latihan" onclick="generateAISoal()">MULAI LATIHAN AI</button>
-            <button class="btn btn-outline" onclick="location.reload()">KEMBALI</button>
+            
+            <button class="btn btn-latihan" id="btn-generate" onclick="generateWithAI()">GENERATE SOAL DENGAN AI</button>
         </div>
     </div>
 
     <div id="play-area">
-        <div id="quiz-box" class="card" style="background: white; color: #1f2937;">
-            <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:bold; color:var(--primary); margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;">
-                <span id="info-mapel"></span>
-                <span id="progress-text"></span>
-            </div>
-            <h3 id="txt-soal" style="text-align:left; line-height:1.4; font-size: 17px;">Memuat soal...</h3>
+        <div class="card" style="background: white; color: #333;">
+            <div id="progress-text" style="color: var(--primary); font-weight: bold;"></div>
+            <h3 id="txt-soal"></h3>
             <div id="list-opsi"></div>
-        </div>
-    </div>
-
-    <div id="result-area">
-        <div class="card" style="background:white; color:#1f2937; text-align:center;">
-            <h2 id="res-nama" style="margin-bottom:0">UJIAN SELESAI</h2>
-            <div class="stat-circle" id="res-skor-anim">0</div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin: 20px 0;">
-                <div style="background:#f3f4f6; padding:10px; border-radius:12px;">
-                    <small>WAKTU</small><br><strong id="res-waktu">0s</strong>
-                </div>
-                <div style="background:#f3f4f6; padding:10px; border-radius:12px;">
-                    <small>PREDIKAT</small><br><strong id="res-grade">-</strong>
-                </div>
-            </div>
-            <button class="btn btn-host" onclick="location.reload()">KEMBALI KE MENU</button>
-        </div>
-    </div>
-
-    <div id="auth-area">
-        <div class="card">
-            <h2>Panel Guru</h2>
-            <input type="email" id="auth-email" placeholder="Email">
-            <input type="password" id="auth-pass" placeholder="Password">
-            <div style="display: flex; gap: 10px;">
-                <button class="btn btn-join" onclick="handleLogin()">MASUK</button>
-                <button class="btn btn-latihan" onclick="handleRegister()" style="background: #0ea5e9;">DAFTAR</button>
-            </div>
-            <button class="btn btn-outline" onclick="location.reload()">BATAL</button>
-        </div>
-    </div>
-    
-    <div id="creator-area">
-        <div class="card">
-            <h3>Buat Soal Ujian</h3>
-            <input type="text" id="input-mapel" placeholder="Nama Mapel">
-            <input type="text" id="input-custom-id" placeholder="ID Room">
-            <textarea id="creator-p" placeholder="Pertanyaan..."></textarea>
-            <input type="text" id="creator-o1" placeholder="✔ Benar">
-            <input type="text" id="creator-o2" placeholder="Salah 1">
-            <input type="text" id="creator-o3" placeholder="Salah 2">
-            <input type="text" id="creator-o4" placeholder="Salah 3">
-            <button class="btn btn-join" onclick="tambahSoal()">SIMPAN</button>
-            <p id="count-soal" style="text-align:center">Soal: 0</p>
-            <button class="btn btn-host" onclick="startHost()">AKTIFKAN</button>
-        </div>
-    </div>
-
-    <div id="monitor-area">
-        <div class="card" style="background:white; color:#333">
-            <h3>ID: <span id="mon-id" style="color:var(--primary)"></span></h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>NAMA</th>
-                        <th>SKOR</th>
-                        <th>B/S</th>
-                        <th>WAKTU</th>
-                    </tr>
-                </thead>
-                <tbody id="table-body"></tbody>
-            </table>
-            <button class="btn btn-outline" onclick="location.reload()" style="color:black; border-color:black; margin-top:15px">STOP MONITOR</button>
         </div>
     </div>
 </div>
 
 <script>
-    // --- CONFIG & GLOBAL VARS ---
-    const firebaseConfig = { apiKey: "AIzaSyBDvWZ_cfzTFOx7OujsxpyxD13TD1RWSDM", authDomain: "santriku-cloud.firebaseapp.com", projectId: "santriku-cloud" };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const peerOptions = { config: { 'iceServers': [{ url: 'stun:stun.l.google.com:19302' }] } };
+    let bankSoal = [];
+    let currentIdx = 0;
 
-    let peer = null, conn = null, bankSoal = [], currentIdx = 0, statBenar = 0, startTime = 0;
-
-    function showView(id) {
-        document.querySelectorAll('.container > div').forEach(d => d.style.display = 'none');
-        document.getElementById(id).style.display = 'block';
-    }
-
-    // --- LOGIKA SISWA (PEERJS JOIN) ---
-    function joinRoom() {
-        const rid = document.getElementById('input-room').value.trim().toLowerCase();
-        const nama = document.getElementById('input-nama').value.trim();
-        if(!rid || !nama) return alert("Isi Nama dan ID Room!");
-        const btn = document.getElementById('btn-gabung');
-        btn.disabled = true; btn.innerText = "MENGHUBUNGKAN...";
-        
-        if(peer) peer.destroy();
-        peer = new Peer(peerOptions);
-        peer.on('open', () => {
-            conn = peer.connect(rid, { reliable: true });
-            conn.on('open', () => { conn.send({ type: 'join', nama: nama }); });
-            conn.on('data', d => {
-                if(d.type === 'start') {
-                    bankSoal = d.soal;
-                    document.getElementById('info-mapel').innerText = d.mapel.toUpperCase();
-                    startQuiz();
-                }
-            });
-            setTimeout(() => { if(!bankSoal.length) { alert("Room tidak ditemukan!"); location.reload(); } }, 5000);
-        });
-        peer.on('error', () => { alert("Koneksi gagal!"); location.reload(); });
-    }
-
-    // --- LOGIKA AI (GENERATOR TANPA BATAS) ---
-    function generateAISoal() {
+    async function generateWithAI() {
+        const apiKey = document.getElementById('api-key').value;
+        const mapel = document.getElementById('ai-mapel').value;
         const level = document.getElementById('ai-level').value;
-        const jml = parseInt(document.getElementById('ai-jumlah').value);
-        const mapelRaw = document.getElementById('ai-mapel').value.trim();
-        if (!mapelRaw) return alert("Isi Mapel!");
-        
-        const mapel = mapelRaw.toUpperCase();
-        bankSoal = [];
+        const btn = document.getElementById('btn-generate');
 
-        const prefixes = ["Secara sistematis,", "Menurut perspektif akademis,", "Dalam konteks nyata,", "Berdasarkan standar kompetensi,", "Dilihat dari teori dasar,"];
-        const logicTemplates = [
-            { q: "Apa yang menjadi pilar utama dalam pemahaman {topic}?", a: "Integrasi konsep fundamental dan analisis terstruktur", w: ["Pengabaian detail teknis", "Hanya mengandalkan spekulasi", "Dokumentasi tanpa praktik"] },
-            { q: "Bagaimana cara memvalidasi keberhasilan penerapan {topic}?", a: "Melalui evaluasi data objektif dan konsistensi hasil", w: ["Berdasarkan popularitas semata", "Mengikuti tren tanpa dasar teori", "Mengabaikan standar operasional"] },
-            { q: "Elemen manakah yang paling krusial untuk menjaga integritas {topic}?", a: "Kepatuhan terhadap metodologi dan etika profesi", w: ["Kecepatan penyelesaian tugas", "Efisiensi biaya di atas kualitas", "Otomasi tanpa pengawasan"] }
-        ];
+        if (!apiKey || !mapel) return alert("API Key dan Mapel wajib diisi!");
 
-        const tkBank = [
-            {p: "Apa warna langit saat cerah?", b: "Biru", s: ["Hitam", "Hijau", "Merah"]},
-            {p: "Hewan apa yang bertelur?", b: "Ayam", s: ["Kucing", "Sapi", "Anjing"]}
-        ];
+        btn.disabled = true;
+        btn.innerText = "AI SEDANG BERPIKIR...";
 
-        for(let i = 0; i < jml; i++) {
-            if(level === 'tk') {
-                let res = tkBank[Math.floor(Math.random() * tkBank.length)];
-                bankSoal.push({ p: res.p, o: [res.b, ...res.s] });
-            } else {
-                let p = prefixes[Math.floor(Math.random() * prefixes.length)];
-                let t = logicTemplates[Math.floor(Math.random() * logicTemplates.length)];
-                bankSoal.push({ 
-                    p: `${p} ${t.q.replace(/{topic}/g, mapel)}`.toUpperCase(), 
-                    o: [t.a.replace(/{topic}/g, mapel), ...t.w.map(w => w.replace(/{topic}/g, mapel))] 
-                });
-            }
+        // Prompt (Perintah) untuk AI agar memberikan hasil dalam format JSON yang bisa dibaca sistem
+        const prompt = `Buatkan 5 soal pilihan ganda tentang ${mapel} untuk tingkat ${level}. 
+        Berikan jawaban dalam format JSON murni (array of objects) dengan struktur: 
+        [{"p": "pertanyaan", "o": ["jawaban benar", "salah1", "salah2", "salah3"]}]. 
+        Jangan berikan penjelasan apapun selain JSON.`;
+
+        try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }]
+                })
+            });
+
+            const data = await response.json();
+            const aiText = data.candidates[0].content.parts[0].text;
+            
+            // Membersihkan teks dari markdown jika AI menyertakannya
+            const cleanJson = aiText.replace(/```json|```/g, "").trim();
+            bankSoal = JSON.parse(cleanJson);
+
+            startQuiz();
+        } catch (error) {
+            console.error(error);
+            alert("Gagal memanggil AI. Pastikan API Key benar.");
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "GENERATE SOAL DENGAN AI";
         }
-        document.getElementById('info-mapel').innerText = "AI SIMULASI: " + mapel;
-        startQuiz();
     }
 
-    // --- LOGIKA GAMEPLAY ---
     function startQuiz() {
-        currentIdx = 0; statBenar = 0; startTime = Date.now();
-        showView('play-area'); renderSoal();
+        document.getElementById('latihan-setup').style.display = 'none';
+        document.getElementById('play-area').style.display = 'block';
+        currentIdx = 0;
+        renderSoal();
     }
 
     function renderSoal() {
-        if(currentIdx >= bankSoal.length) return finishQuiz();
+        if (currentIdx >= bankSoal.length) {
+            alert("Ujian selesai!");
+            location.reload();
+            return;
+        }
+
         const s = bankSoal[currentIdx];
-        document.getElementById('progress-text').innerText = `${currentIdx + 1} / ${bankSoal.length}`;
+        document.getElementById('progress-text').innerText = `Soal ${currentIdx + 1} dari ${bankSoal.length}`;
         document.getElementById('txt-soal').innerText = s.p;
-        const list = document.getElementById('list-opsi'); list.innerHTML = "";
-        let shuffled = s.o.map((txt, i) => ({txt, isCorrect: i === 0})).sort(() => Math.random() - 0.5);
-        shuffled.forEach(opt => {
-            const b = document.createElement('button'); b.className = "opsi"; b.innerText = opt.txt;
+        
+        const list = document.getElementById('list-opsi');
+        list.innerHTML = "";
+
+        // Acak posisi pilihan
+        let options = s.o.map((txt, i) => ({ txt, isCorrect: i === 0 })).sort(() => Math.random() - 0.5);
+
+        options.forEach(opt => {
+            const b = document.createElement('button');
+            b.className = "opsi";
+            b.innerText = opt.txt;
             b.onclick = () => {
-                if(opt.isCorrect) { statBenar++; confetti({ particleCount: 50 }); }
-                currentIdx++; renderSoal();
+                if (opt.isCorrect) alert("Benar!");
+                else alert("Salah!");
+                currentIdx++;
+                renderSoal();
             };
             list.appendChild(b);
-        });
-    }
-
-    function finishQuiz() {
-        const totalDetik = Math.floor((Date.now() - startTime) / 1000);
-        const skor = Math.round((statBenar / bankSoal.length) * 100);
-        if(conn) conn.send({ type: 'finish', nama: document.getElementById('input-nama').value, skor: skor, benar: statBenar, total: bankSoal.length, waktu: totalDetik });
-        showView('result-area');
-        document.getElementById('res-waktu').innerText = totalDetik + "s";
-        let count = 0;
-        let itv = setInterval(() => {
-            if(count >= skor) clearInterval(itv);
-            document.getElementById('res-skor-anim').innerText = count; count++;
-        }, 20);
-        document.getElementById('res-grade').innerText = skor >= 70 ? "JAYYID" : "BELAJAR LAGI";
-    }
-
-    // --- LOGIKA GURU (AUTH & HOSTING) ---
-    async function handleLogin() {
-        try { await auth.signInWithEmailAndPassword(document.getElementById('auth-email').value, document.getElementById('auth-pass').value); showView('creator-area'); } catch(e) { alert("Login Gagal!"); }
-    }
-    async function handleRegister() {
-        try { await auth.createUserWithEmailAndPassword(document.getElementById('auth-email').value, document.getElementById('auth-pass').value); alert("Berhasil Terdaftar!"); } catch(e) { alert(e.message); }
-    }
-    function tambahSoal() {
-        bankSoal.push({ p: document.getElementById('creator-p').value, o: [document.getElementById('creator-o1').value, document.getElementById('creator-o2').value, document.getElementById('creator-o3').value, document.getElementById('creator-o4').value] });
-        document.getElementById('count-soal').innerText = "Soal: " + bankSoal.length;
-    }
-    function startHost() {
-        let rid = document.getElementById('input-custom-id').value.toLowerCase();
-        peer = new Peer(rid, peerOptions);
-        peer.on('open', id => { showView('monitor-area'); document.getElementById('mon-id').innerText = id.toUpperCase(); });
-        peer.on('connection', c => {
-            c.on('data', d => {
-                if(d.type === 'join') c.send({ type: 'start', soal: bankSoal, mapel: document.getElementById('input-mapel').value });
-                if(d.type === 'finish') {
-                    const row = `<tr><td>${d.nama}</td><td>${d.skor}</td><td>${d.benar}/${d.total}</td><td>${d.waktu}s</td></tr>`;
-                    document.getElementById('table-body').innerHTML += row;
-                }
-            });
         });
     }
 </script>
