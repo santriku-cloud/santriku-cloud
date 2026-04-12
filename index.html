@@ -211,16 +211,40 @@
         });
     }
 
-    // --- FITUR AI (GENERATIVE) ---
-    async function generateAISoal() {
+ async function generateAISoal() {
         const mapel = document.getElementById('ai-mapel').value.trim();
         const level = document.getElementById('ai-level').value;
         const jml = document.getElementById('ai-jumlah').value;
         const btn = document.getElementById('btn-ai-start');
 
         if(!mapel) return alert("Harap isi mata pelajaran!");
-        btn.disabled = true; btn.innerText = "MENYUSUN SOAL...";
 
+        btn.disabled = true;
+        btn.innerText = "AI SEDANG BERPIKIR...";
+
+        try {
+            // PERBAIKAN DI SINI: Menambahkan kurung tutup dan format fetch yang benar
+            const response = await fetch('https://santriku-cloud.vercel.app/api/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ subject: mapel, level: level, count: jml })
+            });
+
+            if (!response.ok) throw new Error("Gagal mengambil data dari server");
+
+            const data = await response.json();
+            bankSoal = data.questions; 
+            document.getElementById('info-mapel').innerText = "AI SIMULASI: " + mapel.toUpperCase();
+            startQuiz();
+
+        } catch (e) {
+            console.error(e);
+            alert("Terjadi kesalahan koneksi ke AI. Pastikan Vercel sudah aktif!");
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "JALANKAN KECERDASAN AI";
+        }
+    }
         try {
             const response = await fetch('https://santriku-cloud.vercel.app/api/generate', {
                 method: 'POST',
