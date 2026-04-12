@@ -171,9 +171,6 @@
     const auth = firebase.auth();
     const peerOptions = { config: { 'iceServers': [{ url: 'stun:stun.l.google.com:19302' }] } };
 
-    // MASUKKAN API KEY GEMINI DISINI
-    const GEMINI_API_KEY = "PASTE_API_KEY_ANDA_DISINI"; 
-
     let peer = null, conn = null, bankSoal = [], currentIdx = 0, statBenar = 0, startTime = 0;
 
     function showView(id) {
@@ -206,7 +203,7 @@
         peer.on('error', () => { alert("Koneksi gagal!"); location.reload(); });
     }
 
-    // --- LOGIKA AI (BARU: MENGGUNAKAN GEMINI API) ---
+    // --- LOGIKA AI (Backend Bridge) ---
     async function generateAISoal() {
         const mapel = document.getElementById('ai-mapel').value.trim();
         const level = document.getElementById('ai-level').value;
@@ -214,33 +211,32 @@
         const btn = document.getElementById('btn-ai-start');
 
         if(!mapel) return alert("Harap isi mata pelajaran!");
-        if(GEMINI_API_KEY === "PASTE_API_KEY_ANDA_DISINI") return alert("API Key belum dimasukkan di dalam kode!");
 
         btn.disabled = true;
         btn.innerText = "AI SEDANG BERPIKIR...";
 
-        const prompt = `Buatkan ${jml} soal pilihan ganda tentang ${mapel} untuk tingkat ${level}. 
-        Berikan jawaban dalam format JSON murni: [{"p": "pertanyaan", "o": ["jawaban benar", "salah1", "salah2", "salah3"]}]. 
-        PENTING: Jawaban benar harus selalu di urutan pertama (indeks 0). Jangan berikan teks lain selain JSON.`;
-
         try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            // GANTI ALAMAT DI BAWAH INI DENGAN URL BACKEND ANDA NANTI
+            const response = await fetch(`https://ALAMAT_BACKEND_ANDA.vercel.app/api/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                body: JSON.stringify({ 
+                    subject: mapel, 
+                    level: level, 
+                    count: jml 
+                })
             });
 
             const data = await response.json();
-            const resText = data.candidates[0].content.parts[0].text;
-            const cleanJson = resText.replace(/```json|```/g, "").trim();
             
-            bankSoal = JSON.parse(cleanJson);
+            // Backend harus mengirimkan data dalam format soal
+            bankSoal = data.questions; 
             document.getElementById('info-mapel').innerText = "AI SIMULASI: " + mapel.toUpperCase();
             startQuiz();
 
         } catch (e) {
             console.error(e);
-            alert("Gagal terhubung ke AI. Pastikan API Key benar dan internet lancar.");
+            alert("Sistem Backend belum aktif atau koneksi terputus.");
         } finally {
             btn.disabled = false;
             btn.innerText = "JALANKAN KECERDASAN AI";
