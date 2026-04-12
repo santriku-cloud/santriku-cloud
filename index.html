@@ -214,7 +214,7 @@
 
         try {
             // TERHUBUNG KE BACKEND VERCEL ANDA
-           const response = await fetch('santriku-cloud.vercel.app', {
+         const response = await fetch('https://santriku-cloud.vercel.app/api/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ subject: mapel, level: level, count: jml })
