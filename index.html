@@ -4,311 +4,292 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SANTRIKU CLOUD GLOBAL 🌍</title>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        :root { --primary: #065f46; --secondary: #10b981; --accent: #fbbf24; --bg: #022c22; --card-bg: rgba(255, 255, 255, 0.1); }
+        :root { --primary: #065f46; --secondary: #10b981; --accent: #fbbf24; --bg: #022c22; --card-bg: rgba(255, 255, 255, 0.08); }
         body { background: var(--bg); font-family: 'Segoe UI', sans-serif; color: white; margin: 0; padding: 15px; display: flex; justify-content: center; min-height: 100vh; }
-        .container { width: 100%; max-width: 500px; }
-        .card { background: var(--card-bg); padding: 25px; border-radius: 24px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); box-shadow: 0 15px 35px rgba(0,0,0,0.4); }
-        input, select { width: 100%; padding: 14px; border-radius: 14px; border: none; margin: 10px 0; background: white; color: #1f2937; font-size: 15px; }
-        .btn { width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 8px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .container { width: 100%; max-width: 450px; }
+        .card { background: var(--card-bg); padding: 25px; border-radius: 24px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); box-shadow: 0 15px 35px rgba(0,0,0,0.4); animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        input, select, textarea { width: 100%; padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); margin: 10px 0; box-sizing: border-box; background: white; color: #1f2937; font-size: 15px; outline: none; }
+        .btn { width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 8px; font-size: 14px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-host { background: linear-gradient(135deg, var(--accent), #f59e0b); color: #022c22; }
         .btn-join { background: linear-gradient(135deg, var(--secondary), #059669); color: white; }
         .btn-latihan { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; }
         .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; }
-        #play-area, #account-area, #latihan-setup, #result-area, #setup-area { display: none; }
-        .opsi { display: block; width: 100%; padding: 16px; margin: 12px 0; border: none; border-radius: 16px; background: white; text-align: left; font-weight: 600; cursor: pointer; color: #374151; transition: 0.2s; }
+        #play-area, #creator-area, #monitor-area, #auth-area, #latihan-setup, #result-area { display: none; }
+        .opsi { display: block; width: 100%; padding: 16px; margin: 12px 0; border: 2px solid #e5e7eb; border-radius: 16px; background: white; text-align: left; font-weight: 600; cursor: pointer; color: #374151; transition: 0.2s; }
         .opsi:hover { background: #f3f4f6; transform: scale(1.02); }
-        .badge { display: inline-block; padding: 4px 12px; border-radius: 50px; font-size: 10px; font-weight: 900; background: rgba(255,255,255,0.1); margin-bottom: 10px; color: var(--accent); }
-        .history-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
-        #timer { font-weight: bold; color: var(--accent); font-size: 18px; }
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 50px; font-size: 10px; font-weight: 900; background: rgba(255,255,255,0.1); margin-bottom: 10px; }
+        .stat-circle { width: 100px; height: 100px; border-radius: 50%; border: 5px solid var(--secondary); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; margin: 20px auto; color: var(--primary); background: white; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; color: #333; background: white; border-radius: 8px; overflow: hidden; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background: #f3f4f6; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="account-area">
-        <div style="text-align:center; padding: 40px 0;">
-             <i class="fas fa-user-graduate fa-4x" style="color:var(--accent)"></i>
-             <h2>PENDAFTARAN SANTRI</h2>
-             <p style="opacity: 0.7;">Buat akun untuk menyimpan semua level belajar Anda</p>
-        </div>
-        <div class="card">
-            <input type="text" id="user-id" placeholder="Masukkan Nama Lengkap / ID">
-            <button class="btn btn-join" onclick="createStudentAccount()">MASUK KE SISTEM</button>
-        </div>
-    </div>
-
     <div id="setup-area">
         <div style="text-align:center; padding: 20px 0;">
-            <h1 style="color:var(--accent); margin:0">SANTRIKU CLOUD</h1>
-            <p id="welcome-user" style="color: var(--secondary); font-weight: bold;"></p>
+            <h1 style="color:var(--accent); letter-spacing:-1px; margin:0">SANTRIKU CLOUD</h1>
+            <p style="opacity: 0.7; font-size: 12px;">EDUKASI DIGITAL GLOBAL 🌍</p>
         </div>
 
         <div class="card">
-            <div class="badge">PROGRES BELAJAR SAYA</div>
-            <div id="progress-list" style="max-height: 250px; overflow-y: auto;">
-                </div>
-            <button class="btn btn-latihan" onclick="showView('latihan-setup')" style="margin-top: 20px;">
-                <i class="fas fa-plus"></i> MULAI MAPEL BARU
-            </button>
-            <button class="btn btn-outline" onclick="logout()" style="font-size: 12px;">GANTI AKUN</button>
+            <div class="badge" style="color: var(--accent);">GURU / PENGAJAR</div>
+            <button class="btn btn-host" onclick="showView('auth-area')">PANEL KONTROL GURU</button>
+        </div>
+
+        <div class="card">
+            <div class="badge" style="color: var(--secondary);">SANTRI / PESERTA</div>
+            <input type="text" id="input-nama" placeholder="Nama Lengkap Anda">
+            <input type="text" id="input-room" placeholder="ID Room (Contoh: ujian123)">
+            <button class="btn btn-join" id="btn-gabung" onclick="joinRoom()">GABUNG UJIAN</button>
+        </div>
+
+        <div class="card">
+            <div class="badge" style="color: #a78bfa;">MENU 3: CERDAS AI (LEVELING)</div>
+            <button class="btn btn-latihan" onclick="showView('latihan-setup')">MULAI SIMULASI LEVEL 1</button>
         </div>
     </div>
 
     <div id="latihan-setup">
         <div class="card">
-            <h3>PILIH MATERI</h3>
-            <label style="font-size: 12px; opacity: 0.8;">Mata Pelajaran:</label>
-            <input type="text" id="ai-mapel" placeholder="Contoh: Tahfidz, Fisika, Biologi, dll">
-            
-            <label style="font-size: 12px; opacity: 0.8;">Tingkatan Pendidikan:</label>
+            <h3>Konfigurasi AI Lokal</h3>
+            <label style="font-size:12px">Mata Pelajaran:</label>
+            <input type="text" id="ai-mapel" placeholder="Contoh: Tahfidz, Sejarah, Sains...">
+            <label style="font-size:12px">Tingkat Pendidikan:</label>
             <select id="ai-level-tier">
-                <option value="TK/PAUD">TK / PAUD</option>
                 <option value="SD/MI">SD / MI</option>
                 <option value="SMP/MTs">SMP / MTs</option>
                 <option value="SMA/MA">SMA / MA / SMK</option>
+                <option value="UNIVERSITAS">Perguruan Tinggi</option>
             </select>
-
-            <button class="btn btn-join" onclick="generateAISoal()">MULAI LEVEL 1</button>
+            <button class="btn btn-latihan" onclick="startAISession()">MULAI LEVEL 1</button>
             <button class="btn btn-outline" onclick="showView('setup-area')">KEMBALI</button>
         </div>
     </div>
 
     <div id="play-area">
         <div class="card" style="background: white; color: #1f2937;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <div id="info-mapel" class="badge" style="background:var(--primary); color:white; margin:0;"></div>
-                <div id="timer"><i class="fas fa-clock"></i> <span id="time-left">00</span></div>
+            <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:bold; color:var(--primary); margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;">
+                <span id="info-mapel"></span>
+                <span id="progress-text"></span>
             </div>
-            <div style="font-size: 12px; font-weight: bold; color: #666; margin-bottom: 5px;" id="progress-text"></div>
-            <h3 id="txt-soal" style="margin-bottom: 20px; line-height: 1.4;">Memuat soal...</h3>
+            <h3 id="txt-soal" style="text-align:left; line-height:1.4; font-size: 17px;">Memuat soal...</h3>
             <div id="list-opsi"></div>
         </div>
     </div>
 
     <div id="result-area">
         <div class="card" style="background:white; color:#1f2937; text-align:center;">
-            <div id="result-icon"></div>
-            <h2 id="result-title">HASIL</h2>
-            <div id="res-score" style="font-size: 50px; font-weight: 800; color: var(--primary);">0</div>
-            <p id="res-msg" style="padding: 10px; font-style: italic;"></p>
-            <div id="action-buttons">
-                </div>
-            <button class="btn btn-outline" onclick="showView('setup-area')" style="color: #333; border-color: #ccc;">KEMBALI KE MENU</button>
+            <h2 id="res-title">UJIAN SELESAI</h2>
+            <div class="stat-circle" id="res-skor-anim">0</div>
+            <p id="res-msg" style="font-style: italic; color: #666;"></p>
+            <div id="res-action"></div>
+            <button class="btn btn-outline" onclick="location.reload()" style="color: #333; border-color: #ccc;">KEMBALI KE MENU</button>
+        </div>
+    </div>
+
+    <div id="auth-area">
+        <div class="card">
+            <h2>Panel Guru</h2>
+            <input type="email" id="auth-email" placeholder="Email">
+            <input type="password" id="auth-pass" placeholder="Password">
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-join" onclick="handleLogin()">MASUK</button>
+                <button class="btn btn-latihan" onclick="handleRegister()" style="background: #0ea5e9;">DAFTAR</button>
+            </div>
+            <button class="btn btn-outline" onclick="location.reload()">BATAL</button>
+        </div>
+    </div>
+    
+    <div id="creator-area">
+        <div class="card">
+            <h3>Buat Soal Ujian</h3>
+            <input type="text" id="input-mapel" placeholder="Nama Mapel">
+            <input type="text" id="input-custom-id" placeholder="ID Room">
+            <textarea id="creator-p" placeholder="Pertanyaan..."></textarea>
+            <input type="text" id="creator-o1" placeholder="✔ Benar">
+            <input type="text" id="creator-o2" placeholder="Salah 1">
+            <input type="text" id="creator-o3" placeholder="Salah 2">
+            <input type="text" id="creator-o4" placeholder="Salah 3">
+            <button class="btn btn-join" onclick="tambahSoal()">SIMPAN</button>
+            <p id="count-soal" style="text-align:center">Soal: 0</p>
+            <button class="btn btn-host" onclick="startHost()">AKTIFKAN</button>
+        </div>
+    </div>
+
+    <div id="monitor-area">
+        <div class="card" style="background:white; color:#333">
+            <h3>ID: <span id="mon-id" style="color:var(--primary)"></span></h3>
+            <table>
+                <thead>
+                    <tr><th>NAMA</th><th>SKOR</th><th>B/S</th><th>WAKTU</th></tr>
+                </thead>
+                <tbody id="table-body"></tbody>
+            </table>
+            <button class="btn btn-outline" onclick="location.reload()" style="color:black; border-color:black; margin-top:15px">STOP MONITOR</button>
         </div>
     </div>
 </div>
 
 <script>
-    // Database Quotes per Kategori
-    const quotes = {
-        "TAHFIDZ": "Al-Qur'an adalah cahaya hati, penghafalnya adalah keluarga Allah.",
-        "FISIKA": "Fisika mengungkapkan keindahan cara kerja alam semesta ciptaan Tuhan.",
-        "UMUM": "Pendidikan adalah senjata paling ampuh untuk mengubah dunia.",
-        "TK": "Bermain adalah cara terbaik bagi pahlawan kecil untuk belajar!"
+    // --- KONFIGURASI FIREBASE ---
+    const firebaseConfig = { 
+        apiKey: "AIzaSyBDvWZ_cfzTFOx7OujsxpyxD13TD1RWSDM", 
+        authDomain: "santriku-cloud.firebaseapp.com", 
+        projectId: "santriku-cloud" 
     };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const peerOptions = { config: { 'iceServers': [{ url: 'stun:stun.l.google.com:19302' }] } };
 
-    let currentUser = null;
-    let currentMapel = "";
-    let currentTier = "";
-    let currentLevel = 1;
-    let bankSoal = [];
-    let currentIdx = 0;
-    let statBenar = 0;
-    let timerInterval;
+    let peer = null, conn = null, bankSoal = [], currentIdx = 0, statBenar = 0;
+    let currentLvl = 1, currentMapel = "", currentTier = "";
 
-    // Fungsi Navigasi
     function showView(id) {
-        document.querySelectorAll('.container > div').forEach(div => div.style.display = 'none');
-        const target = document.getElementById(id);
-        if(target) target.style.display = 'block';
+        document.querySelectorAll('.container > div').forEach(d => d.style.display = 'none');
+        document.getElementById(id).style.display = 'block';
     }
 
-    // Manajemen Akun
-    function createStudentAccount() {
-        const id = document.getElementById('user-id').value.trim();
-        if(!id) return alert("Silakan masukkan nama!");
-        currentUser = id;
-        localStorage.setItem('santri_user', id);
-        initDashboard();
+    // --- FITUR GABUNG ROOM ---
+    function joinRoom() {
+        const rid = document.getElementById('input-room').value.trim().toLowerCase();
+        const nama = document.getElementById('input-nama').value.trim();
+        if(!rid || !nama) return alert("Isi Nama dan ID Room!");
+        const btn = document.getElementById('btn-gabung');
+        btn.disabled = true; btn.innerText = "MENGHUBUNGKAN...";
+        if(peer) peer.destroy();
+        peer = new Peer(peerOptions);
+        peer.on('open', () => {
+            conn = peer.connect(rid, { reliable: true });
+            conn.on('open', () => { conn.send({ type: 'join', nama: nama }); });
+            conn.on('data', d => {
+                if(d.type === 'start') { bankSoal = d.soal; document.getElementById('info-mapel').innerText = d.mapel.toUpperCase(); startQuiz(); }
+            });
+        });
     }
 
-    function initDashboard() {
-        document.getElementById('welcome-user').innerText = "Ahlan, " + currentUser;
-        showView('setup-area');
-        updateHistoryTable();
-    }
-
-    function updateHistoryTable() {
-        const history = JSON.parse(localStorage.getItem(`hist_${currentUser}`)) || [];
-        const container = document.getElementById('progress-list');
-        
-        if(history.length === 0) {
-            container.innerHTML = `<p style="text-align:center; font-size:13px; opacity:0.6;">Belum ada riwayat belajar. Silakan pilih mapel baru!</p>`;
-            return;
-        }
-
-        container.innerHTML = history.map(h => `
-            <div class="history-item">
-                <div>
-                    <span style="font-size:11px; color:var(--accent)">${h.tier}</span><br>
-                    <strong>${h.mapel}</strong><br>
-                    <small>Level: ${h.level} / 1000</small>
-                </div>
-                <button class="btn-join" style="width:auto; padding:8px 15px; font-size:12px; border-radius:10px;" 
-                    onclick="lanjutLevel('${h.mapel}', '${h.tier}', ${h.level})">LANJUT</button>
-            </div>
-        `).join('');
-    }
-
-    // Logika Soal & Leveling
-    function generateAISoal() {
+    // --- LOGIKA MENU 3: CERDAS AI (LOKAL & VARIATIF) ---
+    function startAISession() {
         currentMapel = document.getElementById('ai-mapel').value.toUpperCase() || "UMUM";
         currentTier = document.getElementById('ai-level-tier').value;
-        startLevelSession(currentMapel, currentTier, 1);
+        currentLvl = 1;
+        generateLevelSoal();
     }
 
-    function lanjutLevel(mapel, tier, level) {
-        currentMapel = mapel;
-        currentTier = tier;
-        startLevelSession(mapel, tier, level);
-    }
-
-    function startLevelSession(mapel, tier, level) {
-        currentLevel = level;
-        currentIdx = 0;
-        statBenar = 0;
-        
-        // Aturan: Level 1=5 soal, Level 2=7 soal, Level 3=9 soal (Bertambah 2 setiap level)
-        const jmlSoal = 5 + (level - 1) * 2;
-        // Waktu: Level 1=60 detik, tambah 15 detik tiap naik level
-        const limitWaktu = 60 + (level - 1) * 15;
-
+    function generateLevelSoal() {
         bankSoal = [];
+        const jmlSoal = 5 + (currentLvl - 1) * 2;
+        
+        // Template Kalimat Variatif
+        const templates = [
+            "Apa elemen utama yang dipelajari dalam {m} pada tingkat {t}?",
+            "Manakah yang merupakan pilar penting dari konsep {m}?",
+            "Dalam studi {m}, hal yang paling mendasar untuk dipahami adalah...",
+            "Bagaimana pengaruh perkembangan {m} terhadap kehidupan di level {t}?",
+            "Sebutkan salah satu komponen kritis dalam materi {m}!",
+            "Apa tantangan terbesar saat mendalami {m} bagi pelajar {t}?",
+            "Secara teoritis, fungsi utama dari {m} adalah untuk..."
+        ];
+
+        // Bank Jawaban (Diambil secara acak)
+        const jawabanBenar = ["Analisis Fundamental", "Implementasi Sistematis", "Struktur Konseptual", "Optimasi Proses", "Metode Berkelanjutan", "Integrasi Multidisiplin"];
+        const jawabanSalah = ["Asumsi Tanpa Dasar", "Proses Acak", "Hasil Sekunder", "Hanya Formalitas", "Komponen Eksternal", "Data Tidak Valid", "Faktor Kebetulan", "Subjektivitas Semata"];
+
         for(let i = 0; i < jmlSoal; i++) {
-            let kesulitan = level < 5 ? "Dasar" : (level < 15 ? "Menengah" : "Tingkat Lanjut");
+            let tpl = templates[Math.floor(Math.random() * templates.length)];
+            let benar = jawabanBenar[Math.floor(Math.random() * jawabanBenar.length)];
+            let salah = [...jawabanSalah].sort(() => 0.5 - Math.random()).slice(0, 3);
+
             bankSoal.push({
-                tanya: `[${tier}] [LEVEL ${level}] Pertanyaan ${i+1}: Apa konsep ${kesulitan} dari ${mapel}?`,
-                jawab: ["Jawaban Benar", "Opsi Salah A", "Opsi Salah B", "Opsi Salah C"]
+                p: tpl.replace(/{m}/g, currentMapel).replace(/{t}/g, currentTier),
+                o: [benar, ...salah]
             });
         }
+        document.getElementById('info-mapel').innerText = `${currentMapel} (LVL ${currentLvl})`;
+        startQuiz();
+    }
 
+    function startQuiz() {
+        currentIdx = 0; statBenar = 0;
         showView('play-area');
-        document.getElementById('info-mapel').innerText = `${mapel} - LVL ${level}`;
         renderSoal();
-        startTimer(limitWaktu);
     }
 
     function renderSoal() {
         if(currentIdx >= bankSoal.length) return finishQuiz();
+        const s = bankSoal[currentIdx];
+        document.getElementById('progress-text').innerText = `${currentIdx + 1} / ${bankSoal.length}`;
+        document.getElementById('txt-soal').innerText = s.p;
+        const list = document.getElementById('list-opsi'); list.innerHTML = "";
         
-        const soal = bankSoal[currentIdx];
-        document.getElementById('progress-text').innerText = `SOAL ${currentIdx + 1} DARI ${bankSoal.length}`;
-        document.getElementById('txt-soal').innerText = soal.tanya;
-        
-        const listOpsi = document.getElementById('list-opsi');
-        listOpsi.innerHTML = "";
-
-        // Acak Opsi
-        let shuffled = [...soal.jawab].sort(() => Math.random() - 0.5);
-        shuffled.forEach(txt => {
-            const btn = document.createElement('button');
-            btn.className = "opsi";
-            btn.innerText = txt;
-            btn.onclick = () => checkJawaban(txt === "Jawaban Benar");
-            listOpsi.appendChild(btn);
+        let shuffled = s.o.map((txt, i) => ({txt, isCorrect: i === 0})).sort(() => Math.random() - 0.5);
+        shuffled.forEach(opt => {
+            const b = document.createElement('button'); b.className = "opsi"; b.innerText = opt.txt;
+            b.onclick = () => {
+                if(opt.isCorrect) { statBenar++; confetti({ particleCount: 40, spread: 60 }); }
+                currentIdx++; renderSoal();
+            };
+            list.appendChild(b);
         });
     }
 
-    function checkJawaban(isCorrect) {
-        if(isCorrect) {
-            statBenar++;
-            confetti({ particleCount: 30, spread: 50, origin: { y: 0.8 } });
-        }
-        currentIdx++;
-        renderSoal();
-    }
-
-    function startTimer(detik) {
-        let sisa = detik;
-        updateTimerDisplay(sisa);
-        clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            sisa--;
-            updateTimerDisplay(sisa);
-            if(sisa <= 0) {
-                clearInterval(timerInterval);
-                alert("Waktu Habis!");
-                finishQuiz();
-            }
-        }, 1000);
-    }
-
-    function updateTimerDisplay(detik) {
-        const m = Math.floor(detik / 60);
-        const s = detik % 60;
-        document.getElementById('time-left').innerText = `${m}:${s < 10 ? '0'+s : s}`;
-    }
-
     function finishQuiz() {
-        clearInterval(timerInterval);
         const skor = Math.round((statBenar / bankSoal.length) * 100);
         const lulus = skor >= 75;
-
         showView('result-area');
-        document.getElementById('res-score').innerText = skor + "%";
+        document.getElementById('res-skor-anim').innerText = skor;
+        const msg = document.getElementById('res-msg');
+        const action = document.getElementById('res-action');
         
-        const msgBox = document.getElementById('res-msg');
-        const actionBox = document.getElementById('action-buttons');
-        actionBox.innerHTML = "";
-
         if(lulus) {
-            const kategoriQuote = currentMapel.includes("TAHFIDZ") || currentMapel.includes("TAFSIR") ? "TAHFIDZ" : 
-                                 (currentMapel.includes("FISIKA") ? "FISIKA" : "UMUM");
-            
-            msgBox.innerHTML = `"${quotes[kategoriQuote] || quotes["UMUM"]}"`;
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-
-            // Simpan Progres
-            saveProgress(currentMapel, currentTier, currentLevel + 1);
-
-            actionBox.innerHTML = `<button class="btn btn-join" onclick="startLevelSession('${currentMapel}', '${currentTier}', ${currentLevel + 1})">LANJUT LEVEL ${currentLevel + 1}</button>`;
+            msg.innerText = "Selamat! Anda lulus ke level berikutnya.";
+            action.innerHTML = `<button class="btn btn-join" onclick="nextLevel()">LANJUT KE LEVEL ${currentLvl + 1}</button>`;
         } else {
-            msgBox.innerText = "Skor minimal 75% untuk lulus. Jangan menyerah, coba lagi!";
-            actionBox.innerHTML = `<button class="btn btn-latihan" onclick="startLevelSession('${currentMapel}', '${currentTier}', ${currentLevel})">ULANGI LEVEL ${currentLevel}</button>`;
+            msg.innerText = "Maaf, skor minimal 75% untuk naik level.";
+            action.innerHTML = `<button class="btn btn-latihan" onclick="generateLevelSoal()">ULANGI LEVEL ${currentLvl}</button>`;
         }
     }
 
-    function saveProgress(mapel, tier, nextLevel) {
-        let history = JSON.parse(localStorage.getItem(`hist_${currentUser}`)) || [];
-        let idx = history.findIndex(x => x.mapel === mapel && x.tier === tier);
-        
-        if(idx > -1) {
-            history[idx].level = nextLevel;
-        } else {
-            history.push({ mapel, tier, level: nextLevel });
-        }
-        localStorage.setItem(`hist_${currentUser}`, JSON.stringify(history));
+    function nextLevel() {
+        currentLvl++;
+        generateLevelSoal();
     }
 
-    function logout() {
-        localStorage.removeItem('santri_user');
-        location.reload();
+    // --- FUNGSI GURU ---
+    async function handleLogin() {
+        try { await auth.signInWithEmailAndPassword(document.getElementById('auth-email').value, document.getElementById('auth-pass').value); showView('creator-area'); } catch(e) { alert("Login Gagal!"); }
     }
-
-    // Auto Load
-    window.onload = () => {
-        const saved = localStorage.getItem('santri_user');
-        if(saved) {
-            currentUser = saved;
-            initDashboard();
-        } else {
-            showView('account-area');
-        }
-    };
+    async function handleRegister() {
+        try { await auth.createUserWithEmailAndPassword(document.getElementById('auth-email').value, document.getElementById('auth-pass').value); alert("Berhasil Terdaftar!"); } catch(e) { alert(e.message); }
+    }
+    function tambahSoal() {
+        bankSoal.push({ p: document.getElementById('creator-p').value, o: [document.getElementById('creator-o1').value, document.getElementById('creator-o2').value, document.getElementById('creator-o3').value, document.getElementById('creator-o4').value] });
+        document.getElementById('count-soal').innerText = "Soal: " + bankSoal.length;
+    }
+    function startHost() {
+        let rid = document.getElementById('input-custom-id').value.toLowerCase();
+        peer = new Peer(rid, peerOptions);
+        peer.on('open', id => { showView('monitor-area'); document.getElementById('mon-id').innerText = id.toUpperCase(); });
+        peer.on('connection', c => {
+            c.on('data', d => {
+                if(d.type === 'join') c.send({ type: 'start', soal: bankSoal, mapel: document.getElementById('input-mapel').value });
+                if(d.type === 'finish') {
+                    const row = `<tr><td>${d.nama}</td><td>${d.skor}</td><td>${d.benar}/${d.total}</td><td>${d.waktu}s</td></tr>`;
+                    document.getElementById('table-body').innerHTML += row;
+                }
+            });
+        });
+    }
 </script>
-
 </body>
 </html>
