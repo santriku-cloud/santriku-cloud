@@ -1,44 +1,43 @@
+// api/generate.js
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export default async function handler(req, res) {
-  // 1. Pastikan Method POST
+  // Atur Header CORS agar file HTML bisa memanggil API ini
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ message: 'Hanya menerima POST' });
   }
-
-  // 2. Ambil API Key dari Environment Variable Vercel
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return res.status(500).json({ error: 'API Key belum dipasang di Vercel Settings' });
-  }
-
-  const { subject, level, count } = req.body;
 
   try {
-    const genAI = new GoogleGenerativeAI(apiKey);
+    const { subject, level, count } = req.body;
     
-    // PERBAIKAN: Menggunakan model gemini-1.5-flash yang lebih stabil
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // AMBIL API KEY DARI ENVIRONMENT VARIABLE VERCEL
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-    const prompt = `Buatkan ${count} soal pilihan ganda tentang ${subject} untuk tingkat ${level} dalam format JSON murni. 
-    Struktur JSON harus: {"questions": [{"p": "pertanyaan", "o": ["jawaban benar", "salah1", "salah2", "salah3"]}]}. 
-    Pastikan jawaban benar selalu di urutan pertama indeks o. Jangan ada teks penjelasan lain, hanya JSON.`;
+    const prompt = `Buatkan ${count} soal pilihan ganda tentang ${subject} untuk tingkat ${level}. 
+    Berikan respon dalam format JSON murni seperti ini: 
+    {"questions": [{"p": "Pertanyaan", "o": ["Jawaban Benar", "Salah 1", "Salah 2", "Salah 3"]}]}
+    Pastikan jawaban benar selalu di urutan pertama array 'o'.`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    let text = response.text();
+    const text = response.text();
+    
+    // Membersihkan teks dari markdown jika ada
+    const cleanJson = text.replace(/```json|```/g, "");
+    const data = JSON.parse(cleanJson);
 
-    // Membersihkan teks jika AI memberikan markdown (seperti ```json ... ```)
-    text = text.replace(/```json/g, "").replace(/```/g, "").trim();
-
-    const quizData = JSON.parse(text);
-    return res.status(200).json(quizData);
-
+    return res.status(200).json(data);
   } catch (error) {
-    console.error("Error backend:", error);
-    return res.status(500).json({ 
-      error: "AI sedang sibuk atau konfigurasi salah", 
-      details: error.message 
-    });
+    console.error(error);
+    return res.status(500).json({ error: "Gagal generate soal", details: error.message });
   }
 }
