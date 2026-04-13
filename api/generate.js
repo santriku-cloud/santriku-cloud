@@ -1,55 +1,44 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
 export default async function handler(req, res) {
-    // Header CORS (Sudah Benar)
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  // 1. Pastikan Method POST
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
-    if (req.method === 'OPTIONS') return res.status(200).end();
-    if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
+  // 2. Ambil API Key dari Environment Variable Vercel
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ error: 'API Key belum dipasang di Vercel Settings' });
+  }
 
-    const { subject, level, count } = req.body;
-    const API_KEY = process.env.GEMINI_API_KEY; 
+  const { subject, level, count } = req.body;
 
-    // Validasi API KEY
-    if (!API_KEY) {
-        return res.status(500).json({ error: "Konfigurasi API Key di Vercel belum diset." });
-    }
+  try {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    
+    // PERBAIKAN: Menggunakan model gemini-1.5-flash yang lebih stabil
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const prompt = `Buatlah ${count} soal pilihan ganda tentang ${subject} untuk tingkat ${level}. 
-    Berikan HANYA array JSON tanpa teks penjelasan apapun di luar array. 
-    Format: [{"p": "pertanyaan", "o": ["jawaban benar", "salah", "salah", "salah"]}]`;
+    const prompt = `Buatkan ${count} soal pilihan ganda tentang ${subject} untuk tingkat ${level} dalam format JSON murni. 
+    Struktur JSON harus: {"questions": [{"p": "pertanyaan", "o": ["jawaban benar", "salah1", "salah2", "salah3"]}]}. 
+    Pastikan jawaban benar selalu di urutan pertama indeks o. Jangan ada teks penjelasan lain, hanya JSON.`;
 
-    try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: { response_mime_type: "application/json" } // Memaksa output JSON
-            })
-        });
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    let text = response.text();
 
-        const data = await response.json();
-        
-        // Cek jika ada error dari API Google
-        if (data.error) {
-            return res.status(500).json({ error: data.error.message });
-        }
+    // Membersihkan teks jika AI memberikan markdown (seperti ```json ... ```)
+    text = text.replace(/```json/g, "").replace(/```/g, "").trim();
 
-        const rawText = data.candidates[0].content.parts[0].text;
-        
-        // Parsing yang lebih aman
-        let questions;
-        try {
-            questions = JSON.parse(rawText.replace(/```json|```/g, "").trim());
-        } catch (e) {
-            console.error("Gagal parse JSON dari AI:", rawText);
-            return res.status(500).json({ error: "Format JSON dari AI tidak valid" });
-        }
-        
-        res.status(200).json({ questions });
-    } catch (error) {
-        console.error("Error Detail:", error);
-        res.status(500).json({ error: "Internal Server Error" });
-    }
+    const quizData = JSON.parse(text);
+    return res.status(200).json(quizData);
+
+  } catch (error) {
+    console.error("Error backend:", error);
+    return res.status(500).json({ 
+      error: "AI sedang sibuk atau konfigurasi salah", 
+      details: error.message 
+    });
+  }
 }
