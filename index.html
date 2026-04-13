@@ -1,81 +1,201 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SANTRIKU CLOUD GLOBAL 🌍</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root { --primary: #065f46; --secondary: #10b981; --accent: #fbbf24; --bg: #022c22; --card-bg: rgba(255, 255, 255, 0.08); }
+        body { background: var(--bg); font-family: 'Segoe UI', sans-serif; color: white; margin: 0; padding: 15px; display: flex; justify-content: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 450px; }
+        .card { background: var(--card-bg); padding: 25px; border-radius: 24px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); box-shadow: 0 15px 35px rgba(0,0,0,0.4); animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        input, select, textarea { width: 100%; padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); margin: 10px 0; box-sizing: border-box; background: white; color: #1f2937; font-size: 15px; outline: none; }
+        .btn { width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 8px; font-size: 14px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-join { background: linear-gradient(135deg, var(--secondary), #059669); color: white; }
+        .btn-latihan { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; }
+        .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; }
+        #play-area, #account-area, #latihan-setup, #result-area, #setup-area { display: none; }
+        .opsi { display: block; width: 100%; padding: 16px; margin: 12px 0; border: 2px solid #e5e7eb; border-radius: 16px; background: white; text-align: left; font-weight: 600; cursor: pointer; color: #374151; }
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 50px; font-size: 10px; font-weight: 900; background: rgba(255,255,255,0.1); margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="account-area">
+        <div style="text-align:center; padding: 20px 0;">
+             <i class="fas fa-user-circle fa-4x" style="color:var(--accent)"></i>
+             <h2>PENDAFTARAN MURID</h2>
+        </div>
+        <div class="card">
+            <input type="text" id="user-id" placeholder="Buat Nama Pengguna/ID">
+            <button class="btn btn-join" onclick="createStudentAccount()">MULAI BELAJAR</button>
+        </div>
+    </div>
+
+    <div id="setup-area">
+        <div style="text-align:center; padding: 20px 0;">
+            <h1 style="color:var(--accent); margin:0">SANTRIKU CLOUD</h1>
+            <p id="welcome-user" style="opacity: 0.7; font-size: 12px;"></p>
+        </div>
+
+        <div id="progress-dashboard" class="card" style="background: rgba(255,255,255,0.15);">
+            <div class="badge" style="color: var(--accent);">RIWAYAT BELAJAR</div>
+            <div id="progress-list"></div>
+        </div>
+
+        <div class="card">
+            <div class="badge" style="color: #a78bfa;">MENU BELAJAR</div>
+            <button class="btn btn-latihan" onclick="showView('latihan-setup')">MULAI MATA PELAJARAN BARU</button>
+            <button class="btn btn-outline" onclick="logout()" style="margin-top:20px">GANTI AKUN</button>
+        </div>
+    </div>
+
+    <div id="latihan-setup">
+        <div class="card">
+            <h3>Konfigurasi Level</h3>
+            <input type="text" id="ai-mapel" placeholder="Contoh: Tahfidz, Fisika, Matematika...">
+            <select id="ai-level">
+                <option value="tk">TK / PAUD</option>
+                <option value="sd">SD / MI</option>
+                <option value="mts">SMP / MTs</option>
+                <option value="sma">SMA / MA / SMK</option>
+            </select>
+            <button class="btn btn-latihan" onclick="generateAISoal()">MULAI LEVEL 1</button>
+            <button class="btn btn-outline" onclick="showView('setup-area')">KEMBALI</button>
+        </div>
+    </div>
+
+    <div id="play-area">
+        <div class="card" style="background: white; color: #1f2937;">
+            <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:bold; color:var(--primary); margin-bottom:10px;">
+                <span id="info-mapel"></span>
+                <span id="progress-text"></span>
+            </div>
+            <h3 id="txt-soal" style="text-align:left;">Memuat soal...</h3>
+            <div id="list-opsi"></div>
+        </div>
+    </div>
+
+    <div id="result-area">
+        <div class="card" style="background:white; color:#1f2937; text-align:center;">
+            <h2>HASIL LEVEL</h2>
+            <div id="res-score" style="font-size: 48px; font-weight: 800; color: var(--primary);">0</div>
+            <p id="res-msg"></p>
+            <button class="btn btn-join" onclick="showView('setup-area')">KEMBALI KE MENU</button>
+        </div>
+    </div>
+</div>
+
 <script>
-    // --- DATABASE KONTEN (QUOTES & JENIS MAPEL) ---
     const mapelData = {
-        "TAHFIDZ": { q: "Al-Qur'an adalah cahaya hati.", color: "#059669" },
-        "FISIKA": { q: "Fisika adalah cara alam semesta bekerja.", color: "#2563eb" },
-        "UMUM": { q: "Ilmu adalah jendela dunia.", color: "#d97706" },
-        "TK": { q: "Bermain adalah cara belajar terbaik!", color: "#db2777" }
+        "TAHFIDZ": { q: "Al-Qur'an adalah cahaya hati." },
+        "FISIKA": { q: "Fisika adalah cara alam semesta bekerja." },
+        "TK": { q: "Bermain adalah cara belajar terbaik!" }
     };
 
     let currentUser = null;
     let currentLevel = 1;
     let timerInterval;
+    let bankSoal = [];
+    let currentIdx = 0;
+    let statBenar = 0;
+    let startTime = 0;
 
-    // --- MANAJEMEN AKUN & PROGRESS ---
+    function showView(id) {
+        document.querySelectorAll('.container > div').forEach(d => d.style.display = 'none');
+        document.getElementById(id).style.display = 'block';
+    }
+
     function createStudentAccount() {
         const id = document.getElementById('user-id').value.trim();
         if(!id) return alert("Silakan buat ID Pengguna!");
         currentUser = id;
         localStorage.setItem('active_user', id);
         showView('setup-area');
+        document.getElementById('welcome-user').innerText = "Selamat Datang, " + id;
         updateHistoryTable();
     }
 
-    // Mengambil riwayat belajar dari memori browser lokal
     function updateHistoryTable() {
         const history = JSON.parse(localStorage.getItem(`hist_${currentUser}`)) || [];
         const container = document.getElementById('progress-list');
-        document.getElementById('progress-dashboard').style.display = history.length ? 'block' : 'none';
         
+        if(history.length === 0) {
+            container.innerHTML = "<p style='font-size:12px; opacity:0.6'>Belum ada riwayat. Ayo mulai belajar!</p>";
+            return;
+        }
+
         container.innerHTML = history.map(h => `
             <div class="card" style="background:white; color:#333; padding:12px; margin:8px 0; display:flex; justify-content:space-between; align-items:center;">
                 <div>
                     <strong style="color:var(--primary)">${h.mapel}</strong><br>
-                    <small>Terakhir: Level ${h.level}</small>
+                    <small>Progres: Level ${h.level}</small>
                 </div>
-                <button class="btn-join" style="width:auto; padding:5px 15px; font-size:12px;" 
+                <button class="btn-join" style="width:auto; padding:5px 15px; font-size:10px; border-radius:8px" 
                     onclick="lanjutLevel('${h.mapel}', ${h.level})">LANJUT</button>
             </div>
         `).join('');
     }
 
-    // --- LOGIKA GENERATOR 1000 SOAL ---
     function generateAISoal() {
         const mapel = document.getElementById('ai-mapel').value.toUpperCase() || "UMUM";
         startLevelSession(mapel, 1);
     }
 
     function lanjutLevel(mapel, lastLevel) {
+        document.getElementById('ai-mapel').value = mapel;
         startLevelSession(mapel, lastLevel + 1);
     }
 
     function startLevelSession(mapel, level) {
         currentLevel = level;
-        const levelTier = document.getElementById('ai-level').value;
-        
-        // Aturan Level: Soal bertambah 2 setiap naik level (Level 1=5, Lvl 2=7, Lvl 3=9, dst)
+        const tier = document.getElementById('ai-level').value;
         const jmlSoal = 5 + (level * 2); 
-        // Waktu: Level 1=60 detik, tiap naik level tambah 15 detik
         const limitWaktu = 45 + (level * 15); 
         
         bankSoal = [];
         for(let i = 0; i < jmlSoal; i++) {
-            let kesulitan = level > 10 ? "Mahir" : "Dasar";
             bankSoal.push({
-                p: `[Level ${level}] Pertanyaan ${i+1}: Apa konsep ${kesulitan} dari ${mapel} bagi siswa ${levelTier.toUpperCase()}?`,
-                o: [`Jawaban Benar ${i}`, `Opsi Salah X`, `Opsi Salah Y`, `Opsi Salah Z`]
+                p: `[LVL ${level}] Soal ${i+1}: Apa dasar ilmu ${mapel} untuk tingkat ${tier.toUpperCase()}?`,
+                o: [`Jawaban Benar`, `Opsi Salah A`, `Opsi Salah B`, `Opsi Salah C`]
             });
         }
 
-        startQuiz(limitWaktu);
+        currentIdx = 0; statBenar = 0;
+        showView('play-area');
+        renderSoal();
+        startTimer(limitWaktu);
         document.getElementById('info-mapel').innerText = `${mapel} | LVL ${level}`;
     }
 
-    function startQuiz(detik) {
-        currentIdx = 0; statBenar = 0; startTime = Date.now();
-        showView('play-area');
-        renderSoal();
+    function renderSoal() {
+        if(currentIdx >= bankSoal.length) return finishQuiz();
+        const s = bankSoal[currentIdx];
+        document.getElementById('progress-text').innerText = `${currentIdx + 1} / ${bankSoal.length}`;
+        document.getElementById('txt-soal').innerText = s.p;
+        const list = document.getElementById('list-opsi'); 
+        list.innerHTML = "";
         
+        let shuffled = s.o.map((txt, i) => ({txt, isCorrect: i === 0})).sort(() => Math.random() - 0.5);
+        shuffled.forEach(opt => {
+            const b = document.createElement('button');
+            b.className = "opsi";
+            b.innerText = opt.txt;
+            b.onclick = () => {
+                if(opt.isCorrect) { statBenar++; confetti({ particleCount: 30 }); }
+                currentIdx++; renderSoal();
+            };
+            list.appendChild(b);
+        });
+    }
+
+    function startTimer(detik) {
         let sisa = detik;
         clearInterval(timerInterval);
         timerInterval = setInterval(() => {
@@ -93,37 +213,42 @@
         const skor = Math.round((statBenar / bankSoal.length) * 100);
         const mapelActive = document.getElementById('ai-mapel').value.toUpperCase() || "UMUM";
 
+        document.getElementById('res-score').innerText = skor;
+
         if(skor >= 70) {
-            // SIMPAN PROGRESS HANYA JIKA LULUS (SKOR > 70)
             let history = JSON.parse(localStorage.getItem(`hist_${currentUser}`)) || [];
             let idx = history.findIndex(x => x.mapel === mapelActive);
-            
             if(idx > -1) history[idx].level = currentLevel;
             else history.push({ mapel: mapelActive, level: currentLevel });
-            
             localStorage.setItem(`hist_${currentUser}`, JSON.stringify(history));
             
-            // Animasi & Quotes
-            const pesan = mapelData[mapelActive]?.q || "Pekerjaan bagus! Teruslah belajar.";
-            alert(`SELAMAT! Level ${currentLevel} Selesai.\n\n"${pesan}"`);
-            confetti({ strokeWidth: 2, colors: ['#fbbf24', '#10b981'] });
+            const pesan = mapelData[mapelActive]?.q || "Luar biasa! Lanjutkan ke level berikutnya.";
+            document.getElementById('res-msg').innerText = "LEVEL SELESAI! " + pesan;
+            confetti({ particleCount: 150, spread: 70 });
         } else {
-            alert(`Skor Anda ${skor}. Minimal 70 untuk naik level!`);
+            document.getElementById('res-msg').innerText = "Skor kurang dari 70. Coba lagi level ini!";
         }
         
         showView('result-area');
         updateHistoryTable();
     }
 
-    // Cek akun saat loading
+    function logout() {
+        localStorage.removeItem('active_user');
+        location.reload();
+    }
+
     window.onload = () => {
         const user = localStorage.getItem('active_user');
         if(user) {
             currentUser = user;
             showView('setup-area');
+            document.getElementById('welcome-user').innerText = "Selamat Datang, " + user;
             updateHistoryTable();
         } else {
             showView('account-area');
         }
     };
 </script>
+</body>
+</html>
