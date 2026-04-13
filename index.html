@@ -65,16 +65,16 @@
         </div>
 
         <div class="card">
-            <div class="badge" style="color: #a78bfa;">MENU 3: CERDAS AI</div>
-            <button class="btn btn-latihan" onclick="showView('latihan-setup')">SIMULASI MANDIRI AI</button>
+            <div class="badge" style="color: #a78bfa;">MENU 3: CERDAS AI (LOKAL)</div>
+            <button class="btn btn-latihan" onclick="showView('latihan-setup')">SIMULASI MANDIRI</button>
         </div>
     </div>
 
     <div id="latihan-setup">
         <div class="card">
-            <h3>Konfigurasi AI</h3>
+            <h3>Konfigurasi Simulasi</h3>
             <label style="font-size:12px">Mata Pelajaran:</label>
-            <input type="text" id="ai-mapel" placeholder="Contoh: Aqidah, Tafsir, Ulumul Quran...">
+            <input type="text" id="ai-mapel" placeholder="Contoh: Aqidah, Teknologi, Matematika...">
             <label style="font-size:12px">Tingkatan Pendidikan:</label>
             <select id="ai-level">
                 <option value="sd">SD / MI</option>
@@ -83,8 +83,8 @@
                 <option value="s1">Perguruan Tinggi (S1)</option>
             </select>
             <label style="font-size:12px">Jumlah Soal:</label>
-            <input type="number" id="ai-jumlah" value="5" min="1" max="20">
-            <button class="btn btn-latihan" onclick="generateAISoal()">MULAI LATIHAN AI</button>
+            <input type="number" id="ai-jumlah" value="5" min="1" max="10">
+            <button class="btn btn-latihan" onclick="generateAISoal()">MULAI SEKARANG</button>
             <button class="btn btn-outline" onclick="location.reload()">KEMBALI</button>
         </div>
     </div>
@@ -165,7 +165,6 @@
 </div>
 
 <script>
-    // --- CONFIG & GLOBAL VARS ---
     const firebaseConfig = { apiKey: "AIzaSyBDvWZ_cfzTFOx7OujsxpyxD13TD1RWSDM", authDomain: "santriku-cloud.firebaseapp.com", projectId: "santriku-cloud" };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
@@ -178,7 +177,7 @@
         document.getElementById(id).style.display = 'block';
     }
 
-    // --- LOGIKA SISWA ---
+    // --- LOGIKA SISWA (ROOM PEERJS) ---
     function joinRoom() {
         const rid = document.getElementById('input-room').value.trim().toLowerCase();
         const nama = document.getElementById('input-nama').value.trim();
@@ -203,7 +202,7 @@
         peer.on('error', () => { alert("Koneksi gagal!"); location.reload(); });
     }
 
-    // --- LOGIKA AI GENERATIVE ENGINE (TERBARU & BERVARIASI) ---
+    // --- LOGIKA SIMULASI SOAL OTOMATIS (LOKAL - TIDAK BUTUH API KEY) ---
     function generateAISoal() {
         const level = document.getElementById('ai-level').value;
         const jml = parseInt(document.getElementById('ai-jumlah').value);
@@ -213,95 +212,40 @@
         const mapel = mapelRaw.toUpperCase();
         bankSoal = [];
 
-        // Database Pola Pertanyaan yang Lebih Luas
         const logicData = {
             s1: {
-                q: [
-                    "Analisis mendalam terhadap {t} menunjukkan bahwa pilar utamanya adalah...",
-                    "Dalam diskursus kontemporer, tantangan terbesar bagi {t} adalah...",
-                    "Paradigma manakah yang paling relevan untuk memvalidasi {t} secara akademis?",
-                    "Bagaimana korelasi antara integritas data dengan perkembangan {t}?",
-                    "Evaluasi kritis terhadap implementasi {t} seringkali mengabaikan aspek...",
-                    "Apa signifikansi metodologis dalam memperkuat pondasi {t}?"
-                ],
-                a: [
-                    "Integrasi teori multidisiplin dan observasi empiris",
-                    "Akselerasi digital tanpa regulasi etika yang kuat",
-                    "Pendekatan fenomenologis berbasis bukti",
-                    "Memastikan akurasi proyeksi jangka panjang",
-                    "Dampak sosiokultural pada masyarakat lokal",
-                    "Standarisasi prosedur untuk konsistensi hasil"
-                ],
-                w: [
-                    "Spekulasi tanpa dukungan data teknis", "Popularitas tren sesaat", "Reduksionisme konsep", "Otomasi tanpa evaluasi manusia", "Fragmentasi informasi"
-                ]
+                q: ["Bagaimana teori dasar {t} diterapkan dalam penelitian ilmiah?", "Apa dampak utama dari {t} terhadap sistem global saat ini?", "Analisis mendalam tentang {t} menunjukkan pilar utamanya adalah..."],
+                a: ["Integrasi teori multidisiplin", "Efisiensi sistem terdistribusi", "Akurasi data empiris"],
+                w: ["Pendapat subjektif saja", "Hanya mengikuti tren", "Tanpa dasar yang jelas"]
             },
             sma: {
-                q: [
-                    "Faktor pendukung utama dalam perkembangan {t} adalah...",
-                    "Manakah dari pernyataan berikut yang paling tepat menjelaskan fungsi {t}?",
-                    "Langkah pertama yang harus dilakukan dalam menganalisis {t} adalah...",
-                    "Apa dampak positif jangka panjang dari pemahaman {t}?",
-                    "Konsep manakah yang menjadi dasar pembentukan {t}?"
-                ],
-                a: [
-                    "Pemanfaatan teknologi secara terukur",
-                    "Sistem pendukung untuk pengambilan keputusan tepat",
-                    "Identifikasi variabel dan pengumpulan data awal",
-                    "Peningkatan kompetensi dan daya saing global",
-                    "Prinsip efisiensi dan objektivitas yang konsisten"
-                ],
-                w: [
-                    "Pengaruh media sosial semata", "Keinginan individu tanpa rencana", "Mengabaikan aturan yang berlaku", "Cukup dengan hafalan teori saja"
-                ]
+                q: ["Apa fungsi utama dari {t} dalam kehidupan sehari-hari?", "Faktor yang paling mempengaruhi perkembangan {t} adalah...", "Langkah pertama untuk mempelajari {t} dengan benar adalah..."],
+                a: ["Mempermudah pekerjaan manusia", "Inovasi teknologi berkelanjutan", "Memahami konsep dasarnya"],
+                w: ["Menambah beban biaya", "Hanya untuk hiburan", "Tidak ada gunanya"]
             },
             mts: {
-                q: [
-                    "Mengapa kita perlu mempelajari {t} di masa sekarang?",
-                    "Contoh nyata dari penerapan {t} dalam kehidupan adalah...",
-                    "Apa tujuan utama dari dipelajarinya materi {t}?",
-                    "Sebutkan salah satu manfaat menguasai {t}!"
-                ],
-                a: [
-                    "Untuk bekal masa depan yang lebih baik",
-                    "Membantu memecahkan masalah sehari-hari",
-                    "Memperluas wawasan dan cara berpikir kritis",
-                    "Dapat bekerja sama secara profesional"
-                ],
-                w: [
-                    "Hanya untuk mendapatkan nilai", "Karena perintah orang lain saja", "Tidak ada kegunaan praktisnya", "Supaya terlihat lebih pintar dari yang lain"
-                ]
+                q: ["Mengapa kita harus belajar {t}?", "Sebutkan satu contoh penerapan {t}!", "Tujuan utama dari materi {t} adalah..."],
+                a: ["Menambah wawasan baru", "Membantu kegiatan belajar", "Membentuk pola pikir kritis"],
+                w: ["Biar terlihat hebat", "Karena dipaksa guru", "Hanya untuk mengisi waktu"]
             }
         };
 
         const currentData = logicData[level] || logicData.mts;
 
         for(let i = 0; i < jml; i++) {
-            // Pilih Pertanyaan secara acak
-            let qIndex = Math.floor(Math.random() * currentData.q.length);
-            let question = currentData.q[qIndex].replace(/{t}/g, mapel);
-            
-            // Pilih Jawaban Benar (Bisa acak dari bank jawaban agar tidak sama terus)
-            let aIndex = Math.floor(Math.random() * currentData.a.length);
-            let answer = currentData.a[aIndex].replace(/{t}/g, mapel);
+            let qIdx = Math.floor(Math.random() * currentData.q.length);
+            let aIdx = Math.floor(Math.random() * currentData.a.length);
+            let question = currentData.q[qIdx].replace(/{t}/g, mapel);
+            let answer = currentData.a[aIdx].replace(/{t}/g, mapel);
+            let wrongOptions = [...currentData.w].sort(() => 0.5 - Math.random()).slice(0, 3);
 
-            // Pilih Jawaban Salah secara acak dari bank salah
-            let wrongOptions = [...currentData.w]
-                .sort(() => Math.random() - 0.5)
-                .slice(0, 3)
-                .map(w => w.replace(/{t}/g, mapel));
-
-            bankSoal.push({ 
-                p: question, 
-                o: [answer, ...wrongOptions] 
-            });
+            bankSoal.push({ p: question, o: [answer, ...wrongOptions] });
         }
         
-        document.getElementById('info-mapel').innerText = "AI SIMULASI: " + mapel;
+        document.getElementById('info-mapel').innerText = "SIMULASI: " + mapel;
         startQuiz();
     }
 
-    // --- LOGIKA GAMEPLAY ---
     function startQuiz() {
         currentIdx = 0; statBenar = 0; startTime = Date.now();
         showView('play-area'); renderSoal();
@@ -314,7 +258,6 @@
         document.getElementById('txt-soal').innerText = s.p;
         const list = document.getElementById('list-opsi'); list.innerHTML = "";
         
-        // Acak posisi pilihan jawaban
         let shuffled = s.o.map((txt, i) => ({txt, isCorrect: i === 0})).sort(() => Math.random() - 0.5);
         
         shuffled.forEach(opt => {
@@ -338,10 +281,9 @@
             if(count >= skor) clearInterval(itv);
             document.getElementById('res-skor-anim').innerText = count; count++;
         }, 20);
-        document.getElementById('res-grade').innerText = skor >= 70 ? "JAYYID" : "BELAJAR LAGI";
+        document.getElementById('res-grade').innerText = skor >= 70 ? "SANGAT BAIK" : "TINGKATKAN LAGI";
     }
 
-    // --- LOGIKA GURU (AUTH & HOSTING) ---
     async function handleLogin() {
         try { await auth.signInWithEmailAndPassword(document.getElementById('auth-email').value, document.getElementById('auth-pass').value); showView('creator-area'); } catch(e) { alert("Login Gagal!"); }
     }
