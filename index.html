@@ -21,13 +21,15 @@
         .btn-join { background: linear-gradient(135deg, var(--secondary), #059669); color: white; }
         .btn-latihan { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; }
         .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; }
-        #play-area, #creator-area, #monitor-area, #auth-area, #latihan-setup, #result-area { display: none; }
+        #play-area, #creator-area, #monitor-area, #auth-area, #latihan-setup, #result-area, #detail-murid-area { display: none; }
         .opsi { display: block; width: 100%; padding: 16px; margin: 12px 0; border: 2px solid #e5e7eb; border-radius: 16px; background: white; text-align: left; font-weight: 600; cursor: pointer; color: #374151; }
         .badge { display: inline-block; padding: 4px 12px; border-radius: 50px; font-size: 10px; font-weight: 900; background: rgba(255,255,255,0.1); margin-bottom: 10px; }
         .stat-circle { width: 100px; height: 100px; border-radius: 50%; border: 5px solid var(--secondary); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; margin: 20px auto; color: var(--primary); background: white; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; color: #333; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
         th { background: #f3f4f6; }
+        .list-eval { list-style: none; padding: 0; }
+        .list-eval li { background: white; color: #333; padding: 10px; margin: 5px 0; border-radius: 8px; display: flex; justify-content: space-between; font-weight: bold; border: 1px solid #eee; }
     </style>
 </head>
 <body>
@@ -36,7 +38,7 @@
     <div id="setup-area">
         <div style="text-align:center; padding: 20px 0;">
             <div style="background: var(--accent); width: 60px; height: 60px; border-radius: 18px; display: inline-flex; align-items: center; justify-content: center; transform: rotate(-10deg); margin-bottom: 10px;">
-                <i class="fas fa-university fa-2x" style="color:#022c22; transform: rotate(10deg);"></i>
+                <i class="fas fa-university fa-2x" style="color:#022c22;"></i>
             </div>
             <h1 style="color:var(--accent); letter-spacing:-1px; margin:0">SANTRIKU CLOUD</h1>
             <p style="opacity: 0.7; font-size: 12px;">EDUKASI DIGITAL GLOBAL 🌍</p>
@@ -55,55 +57,28 @@
         </div>
 
         <div class="card">
-            <div class="badge" style="color: #a78bfa;">MENU 3: CERDAS AI</div>
-            <button class="btn btn-latihan" onclick="showView('latihan-setup')">SIMULASI MANDIRI AI</button>
+            <div class="badge" style="color: #a78bfa;">MENU 3: EVALUASI</div>
+            <button class="btn btn-latihan" onclick="showView('latihan-setup')">LIHAT LAPORAN MURID</button>
         </div>
     </div>
 
     <div id="latihan-setup">
         <div class="card">
-            <h3>Konfigurasi AI</h3>
-            <label style="font-size:12px">Mata Pelajaran:</label>
-            <input type="text" id="ai-mapel" placeholder="Contoh: Aqidah, Tafsir, Ulumul Quran...">
-            <label style="font-size:12px">Tingkatan Pendidikan:</label>
-            <select id="ai-level">
-                <option value="tk">TK / PAUD</option>
-                <option value="sd">SD / MI</option>
-                <option value="mts">SMP / MTs</option>
-                <option value="sma">SMA / MA / SMK</option>
-                <option value="s1">Perguruan Tinggi (S1)</option>
-            </select>
-            <label style="font-size:12px">Jumlah Soal:</label>
-            <input type="number" id="ai-jumlah" value="5" min="1" max="20">
-            <button class="btn btn-latihan" onclick="generateAISoal()">MULAI LATIHAN AI</button>
+            <h3>Pusat Evaluasi</h3>
+            <input type="text" id="eval-room" placeholder="ID Room yang ingin dicek">
+            <button class="btn btn-latihan" onclick="bukaEvaluasi()">LIHAT DAFTAR MURID</button>
+            <div id="eval-list-box" style="margin-top:15px; display:none;">
+                <ul id="list-eval-murid" class="list-eval"></ul>
+            </div>
             <button class="btn btn-outline" onclick="location.reload()">KEMBALI</button>
         </div>
     </div>
 
-    <div id="play-area">
-        <div id="quiz-box" class="card" style="background: white; color: #1f2937;">
-            <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:bold; color:var(--primary); margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;">
-                <span id="info-mapel"></span>
-                <span id="progress-text"></span>
-            </div>
-            <h3 id="txt-soal" style="text-align:left; line-height:1.4; font-size: 17px;">Memuat soal...</h3>
-            <div id="list-opsi"></div>
-        </div>
-    </div>
-
-    <div id="result-area">
-        <div class="card" style="background:white; color:#1f2937; text-align:center;">
-            <h2 id="res-nama" style="margin-bottom:0">UJIAN SELESAI</h2>
-            <div class="stat-circle" id="res-skor-anim">0</div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin: 20px 0;">
-                <div style="background:#f3f4f6; padding:10px; border-radius:12px;">
-                    <small>WAKTU</small><br><strong id="res-waktu">0s</strong>
-                </div>
-                <div style="background:#f3f4f6; padding:10px; border-radius:12px;">
-                    <small>PREDIKAT</small><br><strong id="res-grade">-</strong>
-                </div>
-            </div>
-            <button class="btn btn-host" onclick="location.reload()">KEMBALI KE MENU</button>
+    <div id="detail-murid-area">
+        <div class="card" style="background:white; color:#333;">
+            <h3 id="det-nama" style="color:var(--primary); margin-top:0"></h3>
+            <div id="det-konten" style="text-align:left; font-size:13px; max-height:300px; overflow-y:auto;"></div>
+            <button class="btn btn-outline" onclick="showView('latihan-setup')" style="color:black; border-color:#ccc; margin-top:15px">TUTUP</button>
         </div>
     </div>
 
@@ -119,7 +94,7 @@
             <button class="btn btn-outline" onclick="location.reload()">BATAL</button>
         </div>
     </div>
-    
+
     <div id="creator-area">
         <div class="card">
             <h3>Buat Soal Ujian</h3>
@@ -140,17 +115,29 @@
         <div class="card" style="background:white; color:#333">
             <h3>ID: <span id="mon-id" style="color:var(--primary)"></span></h3>
             <table>
-                <thead>
-                    <tr>
-                        <th>NAMA</th>
-                        <th>SKOR</th>
-                        <th>B/S</th>
-                        <th>WAKTU</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>NAMA</th><th>SKOR</th><th>B/S</th><th>WAKTU</th></tr></thead>
                 <tbody id="table-body"></tbody>
             </table>
             <button class="btn btn-outline" onclick="location.reload()" style="color:black; border-color:black; margin-top:15px">STOP MONITOR</button>
+        </div>
+    </div>
+
+    <div id="play-area">
+        <div id="quiz-box" class="card" style="background: white; color: #1f2937;">
+            <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:bold; color:var(--primary); margin-bottom:10px;">
+                <span id="info-mapel"></span>
+                <span id="progress-text"></span>
+            </div>
+            <h3 id="txt-soal" style="text-align:left;">Memuat soal...</h3>
+            <div id="list-opsi"></div>
+        </div>
+    </div>
+
+    <div id="result-area">
+        <div class="card" style="background:white; color:#1f2937; text-align:center;">
+            <h2 id="res-nama">SELESAI</h2>
+            <div class="stat-circle" id="res-skor-anim">0</div>
+            <button class="btn btn-host" onclick="location.reload()">KEMBALI</button>
         </div>
     </div>
 </div>
@@ -162,20 +149,25 @@
     const peerOptions = { config: { 'iceServers': [{ url: 'stun:stun.l.google.com:19302' }] } };
 
     let peer = null, conn = null, bankSoal = [], currentIdx = 0, statBenar = 0, startTime = 0;
+    let riwayatJawaban = [];
 
     function showView(id) {
         document.querySelectorAll('.container > div').forEach(d => d.style.display = 'none');
         document.getElementById(id).style.display = 'block';
     }
 
+    // FUNGSI JOIN ROOM (DIKEMBALIKAN KE VERSI AMAN)
     function joinRoom() {
         const rid = document.getElementById('input-room').value.trim().toLowerCase();
         const nama = document.getElementById('input-nama').value.trim();
-        if(!rid || !nama) return alert("Isi Nama dan ID Room!");
+        if(!rid || !nama) return alert("Isi Nama dan ID!");
+        
         const btn = document.getElementById('btn-gabung');
         btn.disabled = true; btn.innerText = "MENGHUBUNGKAN...";
+
         if(peer) peer.destroy();
         peer = new Peer(peerOptions);
+        
         peer.on('open', () => {
             conn = peer.connect(rid, { reliable: true });
             conn.on('open', () => { conn.send({ type: 'join', nama: nama }); });
@@ -188,90 +180,26 @@
             });
             setTimeout(() => { if(!bankSoal.length) { alert("Room tidak ditemukan!"); location.reload(); } }, 5000);
         });
-        peer.on('error', () => { alert("Koneksi gagal!"); location.reload(); });
-    }
-
-    // LOGIKA PERBAIKAN: SOAL MENYESUAIKAN TINGKATAN & SELALU BERBEDA
-    function generateAISoal() {
-        const level = document.getElementById('ai-level').value;
-        const jml = parseInt(document.getElementById('ai-jumlah').value);
-        const mapelRaw = document.getElementById('ai-mapel').value.trim();
-        if (!mapelRaw) return alert("Isi Mapel!");
-        
-        const mapel = mapelRaw.toUpperCase();
-        bankSoal = [];
-
-        // Database soal dinamis berdasarkan tingkatan
-        const soalMaster = {
-            tk: [
-                {p: "Apa warna bendera Indonesia?", b: "Merah Putih", s: ["Hijau Kuning", "Biru", "Hitam"]},
-                {p: "Siapa pencipta kita?", b: "Allah SWT", s: ["Malaikat", "Manusia", "Robot"]},
-                {p: "Satu tambah satu sama dengan?", b: "Dua", s: ["Tiga", "Empat", "Satu"]},
-                {p: "Sebelum makan kita membaca?", b: "Doa", s: ["Buku", "Koran", "Nyanyian"]}
-            ],
-            sd: [
-                {p: "Rukun Islam yang kedua adalah?", b: "Shalat", s: ["Zakat", "Puasa", "Syahadat"]},
-                {p: "Ibu kota negara Indonesia adalah?", b: "Jakarta", s: ["Surabaya", "Bandung", "Kendari"]},
-                {p: "Nabi yang memiliki mukjizat membelah lautan?", b: "Nabi Musa AS", s: ["Nabi Isa AS", "Nabi Nuh AS", "Nabi Daud AS"]}
-            ],
-            mts: [
-                {p: "Siapa khalifah pertama setelah wafatnya Rasulullah?", b: "Abu Bakar Ash-Shiddiq", s: ["Umar bin Khattab", "Utsman bin Affan", "Ali bin Abi Thalib"]},
-                {p: "Hukum bacaan Nun mati bertemu huruf Ba disebut?", b: "Iqlab", s: ["Idgham", "Ikhfa", "Izhar"]},
-                {p: "Kitab Al-Qur'an diturunkan kepada Nabi?", b: "Muhammad SAW", s: ["Ibrahim AS", "Musa AS", "Isa AS"]}
-            ],
-            sma: [
-                {p: "Apa istilah bagi ilmu yang mempelajari tata cara membaca Al-Qur'an?", b: "Tajwid", s: ["Fikih", "Aqidah", "Nahwu"]},
-                {p: "Perjanjian yang mengawali perdamaian antara Muslim dan Quraisy disebut?", b: "Hudaibiyah", s: ["Aqabah", "Piagam Madinah", "Linggarjati"]},
-                {p: "Sifat wajib bagi Allah yang berarti Terdahulu adalah?", b: "Qidam", s: ["Wujud", "Baqa", "Iradat"]}
-            ],
-            s1: [
-                {p: "Metode ijtihad dengan membandingkan masalah baru dengan masalah lama disebut?", b: "Qiyas", s: ["Ijma", "Urf", "Istihsan"]},
-                {p: "Siapa tokoh utama pemikiran Teologi Asy'ariyah?", b: "Abu al-Hasan al-Asy'ari", s: ["Al-Ghazali", "Ibnu Sina", "Wasit bin Atha"]},
-                {p: "Tafsir yang menekankan pada aspek kebahasaan dan sastra disebut?", b: "Tafsir Lughawi", s: ["Tafsir Bil Ma'tsur", "Tafsir Isyari", "Tafsir Falsafi"]}
-            ]
-        };
-
-        // Menggabungkan database soal umum dengan Mapel yang diinput user agar terasa unik
-        let selectedPool = [...soalMaster[level]];
-        
-        // Menambahkan variasi teks mapel ke soal agar terasa spesifik
-        selectedPool = selectedPool.map(item => ({
-            p: `(${mapel}) ${item.p}`,
-            b: item.b,
-            s: item.s
-        }));
-
-        // PENGACAKAN TOTAL: Mengacak urutan soal dalam pool
-        selectedPool.sort(() => Math.random() - 0.5);
-
-        // Mengambil jumlah soal yang diminta
-        for(let i = 0; i < Math.min(jml, selectedPool.length); i++) {
-            bankSoal.push({ p: selectedPool[i].p, o: [selectedPool[i].b, ...selectedPool[i].s] });
-        }
-
-        document.getElementById('info-mapel').innerText = "LATIHAN AI: " + mapel;
-        startQuiz();
+        peer.on('error', () => { alert("Gagal terhubung!"); location.reload(); });
     }
 
     function startQuiz() {
-        currentIdx = 0; statBenar = 0; startTime = Date.now();
+        currentIdx = 0; statBenar = 0; startTime = Date.now(); riwayatJawaban = [];
         showView('play-area'); renderSoal();
     }
 
     function renderSoal() {
         if(currentIdx >= bankSoal.length) return finishQuiz();
         const s = bankSoal[currentIdx];
-        document.getElementById('progress-text').innerText = `${currentIdx + 1} / ${bankSoal.length}`;
+        document.getElementById('progress-text').innerText = `${currentIdx + 1}/${bankSoal.length}`;
         document.getElementById('txt-soal').innerText = s.p;
         const list = document.getElementById('list-opsi'); list.innerHTML = "";
-        
-        // Pengacakan opsi jawaban (A, B, C, D) setiap kali soal dirender
         let shuffled = s.o.map((txt, i) => ({txt, isCorrect: i === 0})).sort(() => Math.random() - 0.5);
-        
         shuffled.forEach(opt => {
             const b = document.createElement('button'); b.className = "opsi"; b.innerText = opt.txt;
             b.onclick = () => {
-                if(opt.isCorrect) { statBenar++; confetti({ particleCount: 50 }); }
+                riwayatJawaban.push({ p: s.p, pilih: opt.txt, kunci: s.o[0], status: opt.isCorrect });
+                if(opt.isCorrect) { statBenar++; confetti({ particleCount: 30 }); }
                 currentIdx++; renderSoal();
             };
             list.appendChild(b);
@@ -281,30 +209,54 @@
     function finishQuiz() {
         const totalDetik = Math.floor((Date.now() - startTime) / 1000);
         const skor = Math.round((statBenar / bankSoal.length) * 100);
-        if(conn) conn.send({ type: 'finish', nama: document.getElementById('input-nama').value, skor: skor, benar: statBenar, total: bankSoal.length, waktu: totalDetik });
+        if(conn) conn.send({ 
+            type: 'finish', 
+            nama: document.getElementById('input-nama').value, 
+            skor: skor, benar: statBenar, total: bankSoal.length, 
+            waktu: totalDetik,
+            detail: riwayatJawaban 
+        });
         showView('result-area');
-        document.getElementById('res-waktu').innerText = totalDetik + "s";
-        let count = 0;
-        let itv = setInterval(() => {
-            if(count >= skor) clearInterval(itv);
-            document.getElementById('res-skor-anim').innerText = count; count++;
-        }, 20);
-        let gr = skor >= 70 ? "JAYYID" : "BELAJAR LAGI";
-        document.getElementById('res-grade').innerText = gr;
+        document.getElementById('res-skor-anim').innerText = skor;
+    }
+
+    // EVALUASI (MENU 3)
+    function bukaEvaluasi() {
+        const rid = document.getElementById('eval-room').value.toLowerCase();
+        const data = JSON.parse(localStorage.getItem(`db_${rid}`) || "[]");
+        const listUl = document.getElementById('list-eval-murid');
+        listUl.innerHTML = "";
+        if(data.length === 0) return alert("Data kosong!");
+        data.forEach(m => {
+            const li = document.createElement('li');
+            li.innerHTML = `<span>${m.nama}</span> <span>Skor: ${m.skor}</span>`;
+            li.onclick = () => {
+                showView('detail-murid-area');
+                document.getElementById('det-nama').innerText = m.nama;
+                let h = "";
+                m.detail.forEach((d, i) => {
+                    h += `<p><b>${i+1}. ${d.p}</b><br>Jawab: <span style="color:${d.status?'green':'red'}">${d.pilih}</span></p>`;
+                });
+                document.getElementById('det-konten').innerHTML = h;
+            };
+            listUl.appendChild(li);
+        });
+        document.getElementById('eval-list-box').style.display = 'block';
     }
 
     async function handleLogin() {
-        try { await auth.signInWithEmailAndPassword(document.getElementById('auth-email').value, document.getElementById('auth-pass').value); showView('creator-area'); } catch(e) { alert("Login Gagal!"); }
+        try { await auth.signInWithEmailAndPassword(document.getElementById('auth-email').value, document.getElementById('auth-pass').value); showView('creator-area'); } catch(e) { alert("Error!"); }
     }
     async function handleRegister() {
-        try { await auth.createUserWithEmailAndPassword(document.getElementById('auth-email').value, document.getElementById('auth-pass').value); alert("Berhasil Terdaftar!"); } catch(e) { alert(e.message); }
+        try { await auth.createUserWithEmailAndPassword(document.getElementById('auth-email').value, document.getElementById('auth-pass').value); alert("Sukses!"); } catch(e) { alert(e.message); }
     }
     function tambahSoal() {
         bankSoal.push({ p: document.getElementById('creator-p').value, o: [document.getElementById('creator-o1').value, document.getElementById('creator-o2').value, document.getElementById('creator-o3').value, document.getElementById('creator-o4').value] });
         document.getElementById('count-soal').innerText = "Soal: " + bankSoal.length;
     }
+
     function startHost() {
-        let rid = document.getElementById('input-custom-id').value.toLowerCase();
+        const rid = document.getElementById('input-custom-id').value.toLowerCase();
         peer = new Peer(rid, peerOptions);
         peer.on('open', id => { showView('monitor-area'); document.getElementById('mon-id').innerText = id.toUpperCase(); });
         peer.on('connection', c => {
@@ -313,6 +265,10 @@
                 if(d.type === 'finish') {
                     const row = `<tr><td>${d.nama}</td><td>${d.skor}</td><td>${d.benar}/${d.total}</td><td>${d.waktu}s</td></tr>`;
                     document.getElementById('table-body').innerHTML += row;
+                    // Simpan ke local storage untuk Evaluasi
+                    let current = JSON.parse(localStorage.getItem(`db_${rid}`) || "[]");
+                    current.push(d);
+                    localStorage.setItem(`db_${rid}`, JSON.stringify(current));
                 }
             });
         });
