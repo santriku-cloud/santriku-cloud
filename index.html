@@ -21,15 +21,13 @@
         .btn-join { background: linear-gradient(135deg, var(--secondary), #059669); color: white; }
         .btn-latihan { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; }
         .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; }
-        #play-area, #creator-area, #monitor-area, #auth-area, #latihan-setup, #result-area, #detail-murid-area { display: none; }
+        #play-area, #creator-area, #monitor-area, #auth-area, #latihan-setup, #result-area { display: none; }
         .opsi { display: block; width: 100%; padding: 16px; margin: 12px 0; border: 2px solid #e5e7eb; border-radius: 16px; background: white; text-align: left; font-weight: 600; cursor: pointer; color: #374151; }
         .badge { display: inline-block; padding: 4px 12px; border-radius: 50px; font-size: 10px; font-weight: 900; background: rgba(255,255,255,0.1); margin-bottom: 10px; }
         .stat-circle { width: 100px; height: 100px; border-radius: 50%; border: 5px solid var(--secondary); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; margin: 20px auto; color: var(--primary); background: white; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; color: #333; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
         th { background: #f3f4f6; }
-        .list-eval { list-style: none; padding: 0; }
-        .list-eval li { background: white; color: #333; padding: 12px; margin: 8px 0; border-radius: 12px; cursor: pointer; display: flex; justify-content: space-between; font-weight: bold; border: 1px solid #ddd; }
     </style>
 </head>
 <body>
@@ -57,30 +55,28 @@
         </div>
 
         <div class="card">
-            <div class="badge" style="color: #a78bfa;">MENU 3: EVALUASI MURID</div>
-            <button class="btn btn-latihan" onclick="showView('latihan-setup')">CEK LAPORAN TUGAS</button>
+            <div class="badge" style="color: #a78bfa;">MENU 3: CERDAS AI</div>
+            <button class="btn btn-latihan" onclick="showView('latihan-setup')">SIMULASI MANDIRI AI</button>
         </div>
     </div>
 
     <div id="latihan-setup">
         <div class="card">
-            <h3>Login Evaluasi</h3>
-            <input type="email" id="eval-email" placeholder="Email Guru">
-            <input type="text" id="eval-room" placeholder="ID Room">
-            <button class="btn btn-latihan" onclick="bukaEvaluasi()">LIHAT HASIL</button>
-            <div id="eval-list-container" style="display:none; margin-top:15px;">
-                <h4 style="color:var(--accent)">Daftar Murid:</h4>
-                <ul id="list-eval-murid" class="list-eval"></ul>
-            </div>
+            <h3>Konfigurasi AI</h3>
+            <label style="font-size:12px">Mata Pelajaran:</label>
+            <input type="text" id="ai-mapel" placeholder="Contoh: Aqidah, Tafsir, Ulumul Quran...">
+            <label style="font-size:12px">Tingkatan Pendidikan:</label>
+            <select id="ai-level">
+                <option value="tk">TK / PAUD</option>
+                <option value="sd">SD / MI</option>
+                <option value="mts">SMP / MTs</option>
+                <option value="sma">SMA / MA / SMK</option>
+                <option value="s1">Perguruan Tinggi (S1)</option>
+            </select>
+            <label style="font-size:12px">Jumlah Soal:</label>
+            <input type="number" id="ai-jumlah" value="5" min="1" max="20">
+            <button class="btn btn-latihan" onclick="generateAISoal()">MULAI LATIHAN AI</button>
             <button class="btn btn-outline" onclick="location.reload()">KEMBALI</button>
-        </div>
-    </div>
-
-    <div id="detail-murid-area">
-        <div class="card" style="background:white; color:#333;">
-            <h3 id="det-nama" style="color:var(--primary); margin-top:0"></h3>
-            <div id="det-konten" style="text-align:left; font-size:13px; max-height:350px; overflow-y:auto;"></div>
-            <button class="btn btn-outline" onclick="showView('latihan-setup')" style="color:black; border-color:#ccc; margin-top:15px">TUTUP</button>
         </div>
     </div>
 
@@ -166,7 +162,6 @@
     const peerOptions = { config: { 'iceServers': [{ url: 'stun:stun.l.google.com:19302' }] } };
 
     let peer = null, conn = null, bankSoal = [], currentIdx = 0, statBenar = 0, startTime = 0;
-    let detailSesi = []; // Menampung jawaban murid per sesi
 
     function showView(id) {
         document.querySelectorAll('.container > div').forEach(d => d.style.display = 'none');
@@ -196,8 +191,30 @@
         peer.on('error', () => { alert("Koneksi gagal!"); location.reload(); });
     }
 
+    function generateAISoal() {
+        const level = document.getElementById('ai-level').value;
+        const jml = parseInt(document.getElementById('ai-jumlah').value);
+        const mapelRaw = document.getElementById('ai-mapel').value.trim();
+        if (!mapelRaw) return alert("Isi Mapel!");
+        const mapel = mapelRaw.toUpperCase();
+        bankSoal = [];
+        const soalPool = [
+            {p: "Apa rukun iman yang pertama?", b: "Iman kepada Allah", s: ["Iman kepada Malaikat", "Iman kepada Nabi", "Iman kepada Kitab"]},
+            {p: "Apa kitab suci umat Islam?", b: "Al-Qur'an", s: ["Injil", "Taurat", "Zabur"]},
+            {p: "Siapa penutup para nabi?", b: "Nabi Muhammad SAW", s: ["Nabi Isa AS", "Nabi Musa AS", "Nabi Ibrahim AS"]},
+            {p: "Di kota mana Ka'bah berada?", b: "Makkah", s: ["Madinah", "Riyadh", "Kairo"]},
+            {p: "Berapa jumlah rakaat shalat Subuh?", b: "2 Rakaat", s: ["3 Rakaat", "4 Rakaat", "1 Rakaat"]}
+        ].sort(() => Math.random() - 0.5); // Pengacakan pool soal
+
+        for(let i = 0; i < Math.min(jml, soalPool.length); i++) {
+            bankSoal.push({ p: `(${mapel}) ${soalPool[i].p}`, o: [soalPool[i].b, ...soalPool[i].s] });
+        }
+        document.getElementById('info-mapel').innerText = "LATIHAN AI: " + mapel;
+        startQuiz();
+    }
+
     function startQuiz() {
-        currentIdx = 0; statBenar = 0; startTime = Date.now(); detailSesi = [];
+        currentIdx = 0; statBenar = 0; startTime = Date.now();
         showView('play-area'); renderSoal();
     }
 
@@ -211,7 +228,6 @@
         shuffled.forEach(opt => {
             const b = document.createElement('button'); b.className = "opsi"; b.innerText = opt.txt;
             b.onclick = () => {
-                detailSesi.push({ soal: s.p, pilih: opt.txt, kunci: s.o[0], b: opt.isCorrect });
                 if(opt.isCorrect) { statBenar++; confetti({ particleCount: 50 }); }
                 currentIdx++; renderSoal();
             };
@@ -222,13 +238,7 @@
     function finishQuiz() {
         const totalDetik = Math.floor((Date.now() - startTime) / 1000);
         const skor = Math.round((statBenar / bankSoal.length) * 100);
-        if(conn) conn.send({ 
-            type: 'finish', 
-            nama: document.getElementById('input-nama').value, 
-            skor: skor, benar: statBenar, total: bankSoal.length, 
-            waktu: totalDetik, 
-            riwayat: detailSesi 
-        });
+        if(conn) conn.send({ type: 'finish', nama: document.getElementById('input-nama').value, skor: skor, benar: statBenar, total: bankSoal.length, waktu: totalDetik });
         showView('result-area');
         document.getElementById('res-waktu').innerText = totalDetik + "s";
         let count = 0;
@@ -236,33 +246,8 @@
             if(count >= skor) clearInterval(itv);
             document.getElementById('res-skor-anim').innerText = count; count++;
         }, 20);
-        document.getElementById('res-grade').innerText = skor >= 70 ? "JAYYID" : "BELAJAR LAGI";
-    }
-
-    // --- FITUR EVALUASI ---
-    function bukaEvaluasi() {
-        const rid = document.getElementById('eval-room').value.toLowerCase();
-        if(!rid) return alert("ID Room Kosong!");
-        const storageKey = `eval_data_${rid}`;
-        const data = JSON.parse(localStorage.getItem(storageKey) || "[]");
-        const listUl = document.getElementById('list-eval-murid');
-        listUl.innerHTML = "";
-        if(data.length === 0) return alert("Belum ada data murid.");
-        data.forEach((m) => {
-            const li = document.createElement('li');
-            li.innerHTML = `<span>${m.nama}</span><span>${m.skor}</span>`;
-            li.onclick = () => {
-                showView('detail-murid-area');
-                document.getElementById('det-nama').innerText = m.nama;
-                let h = "";
-                m.riwayat.forEach((r, i) => {
-                    h += `<p><b>${i+1}. ${r.soal}</b><br>Jawab: <span style="color:${r.b?'green':'red'}">${r.pilih}</span><br>Kunci: ${r.kunci}</p><hr>`;
-                });
-                document.getElementById('det-konten').innerHTML = h;
-            };
-            listUl.appendChild(li);
-        });
-        document.getElementById('eval-list-container').style.display = 'block';
+        let gr = skor >= 70 ? "JAYYID" : "BELAJAR LAGI";
+        document.getElementById('res-grade').innerText = gr;
     }
 
     async function handleLogin() {
@@ -285,11 +270,6 @@
                 if(d.type === 'finish') {
                     const row = `<tr><td>${d.nama}</td><td>${d.skor}</td><td>${d.benar}/${d.total}</td><td>${d.waktu}s</td></tr>`;
                     document.getElementById('table-body').innerHTML += row;
-                    // Simpan data untuk menu evaluasi
-                    const storageKey = `eval_data_${rid}`;
-                    let db = JSON.parse(localStorage.getItem(storageKey) || "[]");
-                    db.push(d);
-                    localStorage.setItem(storageKey, JSON.stringify(db));
                 }
             });
         });
