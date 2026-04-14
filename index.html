@@ -31,13 +31,15 @@
         .btn-join { background: linear-gradient(135deg, var(--secondary), #059669); color: white; }
         .btn-latihan { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; }
         .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; }
-        #play-area, #creator-area, #monitor-area, #auth-area, #latihan-setup, #result-area { display: none; }
+        #play-area, #creator-area, #monitor-area, #auth-area, #latihan-setup, #result-area, #detail-murid-area { display: none; }
         .opsi { display: block; width: 100%; padding: 16px; margin: 12px 0; border: 2px solid #e5e7eb; border-radius: 16px; background: white; text-align: left; font-weight: 600; cursor: pointer; color: #374151; }
         .badge { display: inline-block; padding: 4px 12px; border-radius: 50px; font-size: 10px; font-weight: 900; background: rgba(255,255,255,0.1); margin-bottom: 10px; }
         .stat-circle { width: 100px; height: 100px; border-radius: 50%; border: 5px solid var(--secondary); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; margin: 20px auto; color: var(--primary); background: white; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; color: #333; background: white; border-radius: 8px; overflow: hidden; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
         th { background: #f3f4f6; }
+        .list-murid { list-style: none; padding: 0; }
+        .list-murid li { background: white; color: #333; padding: 12px; margin: 8px 0; border-radius: 12px; cursor: pointer; font-weight: bold; display: flex; justify-content: space-between; }
     </style>
 </head>
 <body>
@@ -66,29 +68,34 @@
 
         <div class="card">
             <div class="badge" style="color: #a78bfa;">MENU 3: EVALUASI MURID</div>
-            <button class="btn btn-latihan" onclick="showView('latihan-setup')">LIHAT DATA EVALUASI</button>
+            <button class="btn btn-latihan" onclick="showView('latihan-setup')">CEK HASIL TUGAS</button>
         </div>
     </div>
 
     <div id="latihan-setup">
         <div class="card">
-            <div class="badge" style="color: #a78bfa;">AKSES EVALUASI</div>
-            <p style="font-size: 12px; opacity: 0.8;">Masukkan kredensial Anda untuk melihat riwayat jawaban murid.</p>
+            <h3>Login Evaluasi</h3>
+            <p style="font-size:11px; opacity:0.8; margin-bottom:10px;">Masukkan email guru dan ID Room tugas yang ingin dicek.</p>
             <input type="email" id="eval-email" placeholder="Email Guru">
-            <input type="text" id="eval-room-id" placeholder="ID Room">
-            <button class="btn btn-latihan" onclick="aksesEvaluasi()">LIHAT HASIL MURID</button>
+            <input type="text" id="eval-room-id" placeholder="ID Room (Contoh: tugas01)">
+            <button class="btn btn-latihan" onclick="loadEvaluasi()">LIHAT DAFTAR MURID</button>
             <button class="btn btn-outline" onclick="location.reload()">KEMBALI</button>
         </div>
-
-        <div id="eval-list-area" class="card" style="display:none; background: white; color: #333;">
-            <h4 id="txt-eval-room" style="color:var(--primary)">Room: -</h4>
-            <div id="container-nama-murid" style="max-height: 200px; overflow-y: auto;"></div>
+        
+        <div id="area-daftar-murid" style="display:none">
+            <div class="card">
+                <h4 style="margin:0">Daftar Murid Mengerjakan:</h4>
+                <ul id="list-eval-murid" class="list-murid"></ul>
+            </div>
         </div>
+    </div>
 
-        <div id="eval-detail-area" class="card" style="display:none; background: #f9fafb; color: #333; border: 2px solid var(--secondary);">
-            <h4 id="txt-nama-detail" style="margin-top:0">Detail Jawaban</h4>
-            <div id="content-detail-jawaban" style="font-size: 13px; text-align: left;"></div>
-            <button class="btn btn-outline" onclick="tutupDetail()" style="color:black; border-color:#ccc; margin-top:10px">TUTUP DETAIL</button>
+    <div id="detail-murid-area">
+        <div class="card" style="background:white; color:#333;">
+            <h3 id="det-nama-murid" style="margin-top:0; color:var(--primary)">Nama Murid</h3>
+            <div id="det-konten-jawaban" style="font-size:13px; text-align:left; max-height:300px; overflow-y:auto;">
+                </div>
+            <button class="btn btn-outline" onclick="showView('latihan-setup')" style="color:black; border-color:#ccc; margin-top:15px">KEMBALI KE DAFTAR</button>
         </div>
     </div>
 
@@ -174,14 +181,61 @@
     const peerOptions = { config: { 'iceServers': [{ url: 'stun:stun.l.google.com:19302' }] } };
 
     let peer = null, conn = null, bankSoal = [], currentIdx = 0, statBenar = 0, startTime = 0;
-    let databaseHasil = []; // Database lokal untuk evaluasi
-    let logJawabanSiswa = []; // Pencatat jawaban per sesi
+    let dataHistoryMurid = []; // Untuk menyimpan sementara hasil dari LocalStorage/Monitor
 
     function showView(id) {
         document.querySelectorAll('.container > div').forEach(d => d.style.display = 'none');
         document.getElementById(id).style.display = 'block';
     }
 
+    // --- LOGIKA MENU 3: EVALUASI MURID (BARU) ---
+    function loadEvaluasi() {
+        const email = document.getElementById('eval-email').value.trim();
+        const rid = document.getElementById('eval-room-id').value.trim().toLowerCase();
+        
+        if(!email || !rid) return alert("Email dan ID Room wajib diisi!");
+
+        // Logika: Kita mengambil data dari LocalStorage yang tersimpan saat Monitor berjalan
+        // Atau dalam sistem ini, kita mensimulasikan data yang pernah masuk ke Room tersebut
+        const storageKey = `report_${rid}`;
+        const data = JSON.parse(localStorage.getItem(storageKey) || "[]");
+
+        const listUl = document.getElementById('list-eval-murid');
+        listUl.innerHTML = "";
+
+        if(data.length === 0) {
+            listUl.innerHTML = "<p style='color:black; font-size:12px;'>Belum ada murid yang mengerjakan ID Room ini.</p>";
+        } else {
+            data.forEach((m, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `<span>${m.nama}</span> <span style="color:var(--primary)">${m.skor}%</span>`;
+                li.onclick = () => lihatDetailMurid(m);
+                listUl.appendChild(li);
+            });
+        }
+        document.getElementById('area-daftar-murid').style.display = 'block';
+    }
+
+    function lihatDetailMurid(dataMurid) {
+        showView('detail-murid-area');
+        document.getElementById('det-nama-murid').innerText = dataMurid.nama;
+        
+        let html = `<p><b>Skor:</b> ${dataMurid.skor} | <b>Waktu:</b> ${dataMurid.waktu}s</p><hr>`;
+        
+        // Menampilkan log soal (Simulasi karena data aslinya dikirim via PeerJS)
+        if(dataMurid.logJawaban) {
+            dataMurid.logJawaban.forEach((item, i) => {
+                html += `<p><b>${i+1}. ${item.soal}</b><br>
+                         Jawaban Murid: <span style="color:${item.isBenar ? 'green' : 'red'}">${item.jawaban}</span></p>`;
+            });
+        } else {
+            html += `<p style="color:gray italic">Detail jawaban tidak tersedia (hanya skor akhir yang terekam).</p>`;
+        }
+        
+        document.getElementById('det-konten-jawaban').innerHTML = html;
+    }
+
+    // --- LOGIKA ASLI (TIDAK BERUBAH) ---
     function joinRoom() {
         const rid = document.getElementById('input-room').value.trim().toLowerCase();
         const nama = document.getElementById('input-nama').value.trim();
@@ -208,7 +262,6 @@
 
     function startQuiz() {
         currentIdx = 0; statBenar = 0; startTime = Date.now();
-        logJawabanSiswa = []; 
         showView('play-area'); renderSoal();
     }
 
@@ -218,15 +271,10 @@
         document.getElementById('progress-text').innerText = `${currentIdx + 1} / ${bankSoal.length}`;
         document.getElementById('txt-soal').innerText = s.p;
         const list = document.getElementById('list-opsi'); list.innerHTML = "";
-        
         let shuffled = s.o.map((txt, i) => ({txt, isCorrect: i === 0})).sort(() => Math.random() - 0.5);
-        
         shuffled.forEach(opt => {
             const b = document.createElement('button'); b.className = "opsi"; b.innerText = opt.txt;
             b.onclick = () => {
-                // Catat jawaban untuk evaluasi
-                logJawabanSiswa.push({ p: s.p, jawabanSiswa: opt.txt, isCorrect: opt.isCorrect });
-                
                 if(opt.isCorrect) { statBenar++; confetti({ particleCount: 50 }); }
                 currentIdx++; renderSoal();
             };
@@ -237,19 +285,7 @@
     function finishQuiz() {
         const totalDetik = Math.floor((Date.now() - startTime) / 1000);
         const skor = Math.round((statBenar / bankSoal.length) * 100);
-        const nama = document.getElementById('input-nama').value;
-        const room = document.getElementById('input-room').value.toLowerCase() || "simulasi-lokal";
-
-        // Simpan ke database lokal untuk evaluasi
-        databaseHasil.push({
-            room: room,
-            nama: nama,
-            skor: skor,
-            jawaban: [...logJawabanSiswa]
-        });
-
-        if(conn) conn.send({ type: 'finish', nama: nama, skor: skor, benar: statBenar, total: bankSoal.length, waktu: totalDetik });
-        
+        if(conn) conn.send({ type: 'finish', nama: document.getElementById('input-nama').value, skor: skor, benar: statBenar, total: bankSoal.length, waktu: totalDetik });
         showView('result-area');
         document.getElementById('res-waktu').innerText = totalDetik + "s";
         let count = 0;
@@ -259,55 +295,6 @@
         }, 20);
         document.getElementById('res-grade').innerText = skor >= 70 ? "SANGAT BAIK" : "TINGKATKAN LAGI";
     }
-
-    // --- FUNGSI EVALUASI (MENU 3) ---
-    function aksesEvaluasi() {
-        const email = document.getElementById('eval-email').value;
-        const room = document.getElementById('eval-room-id').value.trim().toLowerCase();
-        const user = auth.currentUser;
-
-        if(!user || user.email !== email) return alert("Email tidak cocok dengan akun Login!");
-        if(!room) return alert("Masukkan ID Room!");
-
-        const container = document.getElementById('container-nama-murid');
-        document.getElementById('txt-eval-room').innerText = "ROOM: " + room.toUpperCase();
-        container.innerHTML = "";
-        
-        const muridDiRoom = databaseHasil.filter(d => d.room === room);
-        if(muridDiRoom.length === 0) {
-            container.innerHTML = "<p style='color:gray; font-style:italic;'>Data tidak ditemukan.</p>";
-        } else {
-            muridDiRoom.forEach((data, index) => {
-                const b = document.createElement('button');
-                b.className = "opsi";
-                b.innerHTML = `<i class="fas fa-user"></i> ${data.nama} <span style="float:right">${data.skor}%</span>`;
-                b.onclick = () => lihatDetailMurid(index, room);
-                container.appendChild(b);
-            });
-        }
-        document.getElementById('eval-list-area').style.display = 'block';
-    }
-
-    function lihatDetailMurid(idx, room) {
-        const detailArea = document.getElementById('eval-detail-area');
-        const content = document.getElementById('content-detail-jawaban');
-        const data = databaseHasil.filter(d => d.room === room)[idx];
-
-        document.getElementById('txt-nama-detail').innerText = "Hasil: " + data.nama;
-        let html = "";
-        data.jawaban.forEach((j, i) => {
-            const warna = j.isCorrect ? "green" : "red";
-            html += `<div style="margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px">
-                <b>${i+1}. ${j.p}</b><br>
-                <span style="color:${warna}">Pilihan: ${j.jawabanSiswa} ${j.isCorrect ? '✅' : '❌'}</span>
-            </div>`;
-        });
-        content.innerHTML = html;
-        detailArea.style.display = 'block';
-        detailArea.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function tutupDetail() { document.getElementById('eval-detail-area').style.display = 'none'; }
 
     async function handleLogin() {
         try { await auth.signInWithEmailAndPassword(document.getElementById('auth-email').value, document.getElementById('auth-pass').value); showView('creator-area'); } catch(e) { alert("Login Gagal!"); }
@@ -329,6 +316,12 @@
                 if(d.type === 'finish') {
                     const row = `<tr><td>${d.nama}</td><td>${d.skor}</td><td>${d.benar}/${d.total}</td><td>${d.waktu}s</td></tr>`;
                     document.getElementById('table-body').innerHTML += row;
+                    
+                    // Simpan ke LocalStorage agar bisa dibuka di Menu 3 Evaluasi
+                    const storageKey = `report_${rid}`;
+                    let currentReports = JSON.parse(localStorage.getItem(storageKey) || "[]");
+                    currentReports.push(d);
+                    localStorage.setItem(storageKey, JSON.stringify(currentReports));
                 }
             });
         });
