@@ -39,7 +39,7 @@
         th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
         th { background: #f3f4f6; }
         .list-murid { list-style: none; padding: 0; }
-        .list-murid li { background: white; color: #333; padding: 12px; margin: 8px 0; border-radius: 12px; cursor: pointer; font-weight: bold; display: flex; justify-content: space-between; }
+        .list-murid li { background: white; color: #333; padding: 12px; margin: 8px 0; border-radius: 12px; cursor: pointer; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
@@ -68,23 +68,23 @@
 
         <div class="card">
             <div class="badge" style="color: #a78bfa;">MENU 3: EVALUASI MURID</div>
-            <button class="btn btn-latihan" onclick="showView('latihan-setup')">CEK HASIL TUGAS</button>
+            <button class="btn btn-latihan" onclick="showView('latihan-setup')">CEK LAPORAN TUGAS</button>
         </div>
     </div>
 
     <div id="latihan-setup">
         <div class="card">
-            <h3>Login Evaluasi</h3>
-            <p style="font-size:11px; opacity:0.8; margin-bottom:10px;">Masukkan email guru dan ID Room tugas yang ingin dicek.</p>
+            <h3>Evaluasi Guru</h3>
+            <p style="font-size:11px; opacity:0.8; margin-bottom:10px;">Masukan Email & ID Room untuk melihat siapa saja yang sudah mengerjakan.</p>
             <input type="email" id="eval-email" placeholder="Email Guru">
-            <input type="text" id="eval-room-id" placeholder="ID Room (Contoh: tugas01)">
-            <button class="btn btn-latihan" onclick="loadEvaluasi()">LIHAT DAFTAR MURID</button>
+            <input type="text" id="eval-room-id" placeholder="ID Room">
+            <button class="btn btn-latihan" onclick="bukaEvaluasi()">LIHAT HASIL</button>
             <button class="btn btn-outline" onclick="location.reload()">KEMBALI</button>
         </div>
         
-        <div id="area-daftar-murid" style="display:none">
+        <div id="eval-list-container" style="display:none">
             <div class="card">
-                <h4 style="margin:0">Daftar Murid Mengerjakan:</h4>
+                <h4 style="margin:0; color:var(--accent)">Daftar Murid:</h4>
                 <ul id="list-eval-murid" class="list-murid"></ul>
             </div>
         </div>
@@ -93,6 +93,7 @@
     <div id="detail-murid-area">
         <div class="card" style="background:white; color:#333;">
             <h3 id="det-nama-murid" style="margin-top:0; color:var(--primary)">Nama Murid</h3>
+            <hr>
             <div id="det-konten-jawaban" style="font-size:13px; text-align:left; max-height:300px; overflow-y:auto;">
                 </div>
             <button class="btn btn-outline" onclick="showView('latihan-setup')" style="color:black; border-color:#ccc; margin-top:15px">KEMBALI KE DAFTAR</button>
@@ -181,68 +182,59 @@
     const peerOptions = { config: { 'iceServers': [{ url: 'stun:stun.l.google.com:19302' }] } };
 
     let peer = null, conn = null, bankSoal = [], currentIdx = 0, statBenar = 0, startTime = 0;
-    let dataHistoryMurid = []; // Untuk menyimpan sementara hasil dari LocalStorage/Monitor
+    let riwayatJawabanMurid = []; // Untuk melacak jawaban per soal
 
     function showView(id) {
         document.querySelectorAll('.container > div').forEach(d => d.style.display = 'none');
         document.getElementById(id).style.display = 'block';
     }
 
-    // --- LOGIKA MENU 3: EVALUASI MURID (BARU) ---
-    function loadEvaluasi() {
-        const email = document.getElementById('eval-email').value.trim();
-        const rid = document.getElementById('eval-room-id').value.trim().toLowerCase();
+    // --- LOGIKA EVALUASI MURID (MENU 3) ---
+    function bukaEvaluasi() {
+        const email = document.getElementById('eval-email').value;
+        const rid = document.getElementById('eval-room-id').value.toLowerCase();
+        if(!email || !rid) return alert("Email & ID wajib diisi!");
+
+        // Mengambil data dari penyimpanan lokal browser
+        const key = `eval_data_${rid}`;
+        const data = JSON.parse(localStorage.getItem(key) || "[]");
         
-        if(!email || !rid) return alert("Email dan ID Room wajib diisi!");
-
-        // Logika: Kita mengambil data dari LocalStorage yang tersimpan saat Monitor berjalan
-        // Atau dalam sistem ini, kita mensimulasikan data yang pernah masuk ke Room tersebut
-        const storageKey = `report_${rid}`;
-        const data = JSON.parse(localStorage.getItem(storageKey) || "[]");
-
         const listUl = document.getElementById('list-eval-murid');
         listUl.innerHTML = "";
 
         if(data.length === 0) {
-            listUl.innerHTML = "<p style='color:black; font-size:12px;'>Belum ada murid yang mengerjakan ID Room ini.</p>";
+            listUl.innerHTML = "<li style='font-size:12px; color:red'>Belum ada data murid untuk ID ini.</li>";
         } else {
-            data.forEach((m, index) => {
+            data.forEach((m, idx) => {
                 const li = document.createElement('li');
-                li.innerHTML = `<span>${m.nama}</span> <span style="color:var(--primary)">${m.skor}%</span>`;
-                li.onclick = () => lihatDetailMurid(m);
+                li.innerHTML = `<span>${m.nama}</span> <span style="background:var(--secondary); color:white; padding:2px 8px; border-radius:8px">${m.skor}</span>`;
+                li.onclick = () => tampilkanDetailMurid(m);
                 listUl.appendChild(li);
             });
         }
-        document.getElementById('area-daftar-murid').style.display = 'block';
+        document.getElementById('eval-list-container').style.display = 'block';
     }
 
-    function lihatDetailMurid(dataMurid) {
+    function tampilkanDetailMurid(m) {
         showView('detail-murid-area');
-        document.getElementById('det-nama-murid').innerText = dataMurid.nama;
+        document.getElementById('det-nama-murid').innerText = m.nama;
+        let html = `<p><b>Skor:</b> ${m.skor} | <b>Waktu:</b> ${m.waktu}s</p><hr>`;
         
-        let html = `<p><b>Skor:</b> ${dataMurid.skor} | <b>Waktu:</b> ${dataMurid.waktu}s</p><hr>`;
-        
-        // Menampilkan log soal (Simulasi karena data aslinya dikirim via PeerJS)
-        if(dataMurid.logJawaban) {
-            dataMurid.logJawaban.forEach((item, i) => {
-                html += `<p><b>${i+1}. ${item.soal}</b><br>
-                         Jawaban Murid: <span style="color:${item.isBenar ? 'green' : 'red'}">${item.jawaban}</span></p>`;
-            });
-        } else {
-            html += `<p style="color:gray italic">Detail jawaban tidak tersedia (hanya skor akhir yang terekam).</p>`;
-        }
-        
+        m.jawabanDetail.forEach((j, idx) => {
+            html += `<p><b>Soal ${idx+1}:</b> ${j.p}<br>
+                     <b>Jawaban Murid:</b> <span style="color:${j.benar ? 'green' : 'red'}">${j.jawaban}</span><br>
+                     ${!j.benar ? '<small style="color:green">Benar: ' + j.kunci + '</small>' : ''}</p>`;
+        });
         document.getElementById('det-konten-jawaban').innerHTML = html;
     }
 
-    // --- LOGIKA ASLI (TIDAK BERUBAH) ---
+    // --- LOGIKA CORE (ASLI) ---
     function joinRoom() {
         const rid = document.getElementById('input-room').value.trim().toLowerCase();
         const nama = document.getElementById('input-nama').value.trim();
         if(!rid || !nama) return alert("Isi Nama dan ID Room!");
         const btn = document.getElementById('btn-gabung');
         btn.disabled = true; btn.innerText = "MENGHUBUNGKAN...";
-        
         if(peer) peer.destroy();
         peer = new Peer(peerOptions);
         peer.on('open', () => {
@@ -262,6 +254,7 @@
 
     function startQuiz() {
         currentIdx = 0; statBenar = 0; startTime = Date.now();
+        riwayatJawabanMurid = []; // Reset riwayat
         showView('play-area'); renderSoal();
     }
 
@@ -271,10 +264,20 @@
         document.getElementById('progress-text').innerText = `${currentIdx + 1} / ${bankSoal.length}`;
         document.getElementById('txt-soal').innerText = s.p;
         const list = document.getElementById('list-opsi'); list.innerHTML = "";
+        
         let shuffled = s.o.map((txt, i) => ({txt, isCorrect: i === 0})).sort(() => Math.random() - 0.5);
+        
         shuffled.forEach(opt => {
             const b = document.createElement('button'); b.className = "opsi"; b.innerText = opt.txt;
             b.onclick = () => {
+                // Catat detail untuk evaluasi guru
+                riwayatJawabanMurid.push({
+                    p: s.p,
+                    jawaban: opt.txt,
+                    benar: opt.isCorrect,
+                    kunci: s.o[0]
+                });
+
                 if(opt.isCorrect) { statBenar++; confetti({ particleCount: 50 }); }
                 currentIdx++; renderSoal();
             };
@@ -285,7 +288,15 @@
     function finishQuiz() {
         const totalDetik = Math.floor((Date.now() - startTime) / 1000);
         const skor = Math.round((statBenar / bankSoal.length) * 100);
-        if(conn) conn.send({ type: 'finish', nama: document.getElementById('input-nama').value, skor: skor, benar: statBenar, total: bankSoal.length, waktu: totalDetik });
+        if(conn) conn.send({ 
+            type: 'finish', 
+            nama: document.getElementById('input-nama').value, 
+            skor: skor, 
+            benar: statBenar, 
+            total: bankSoal.length, 
+            waktu: totalDetik,
+            jawabanDetail: riwayatJawabanMurid // Mengirim detail ke Guru
+        });
         showView('result-area');
         document.getElementById('res-waktu').innerText = totalDetik + "s";
         let count = 0;
@@ -293,7 +304,7 @@
             if(count >= skor) clearInterval(itv);
             document.getElementById('res-skor-anim').innerText = count; count++;
         }, 20);
-        document.getElementById('res-grade').innerText = skor >= 70 ? "SANGAT BAIK" : "TINGKATKAN LAGI";
+        document.getElementById('res-grade').innerText = skor >= 70 ? "JAYYID" : "BELAJAR LAGI";
     }
 
     async function handleLogin() {
@@ -314,14 +325,15 @@
             c.on('data', d => {
                 if(d.type === 'join') c.send({ type: 'start', soal: bankSoal, mapel: document.getElementById('input-mapel').value });
                 if(d.type === 'finish') {
+                    // Update tabel monitor
                     const row = `<tr><td>${d.nama}</td><td>${d.skor}</td><td>${d.benar}/${d.total}</td><td>${d.waktu}s</td></tr>`;
                     document.getElementById('table-body').innerHTML += row;
-                    
-                    // Simpan ke LocalStorage agar bisa dibuka di Menu 3 Evaluasi
-                    const storageKey = `report_${rid}`;
-                    let currentReports = JSON.parse(localStorage.getItem(storageKey) || "[]");
-                    currentReports.push(d);
-                    localStorage.setItem(storageKey, JSON.stringify(currentReports));
+
+                    // Simpan data evaluasi ke LocalStorage (Simulasi Database)
+                    const storageKey = `eval_data_${rid}`;
+                    let currentData = JSON.parse(localStorage.getItem(storageKey) || "[]");
+                    currentData.push(d);
+                    localStorage.setItem(storageKey, JSON.stringify(currentData));
                 }
             });
         });
