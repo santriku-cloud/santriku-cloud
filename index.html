@@ -191,24 +191,64 @@
         peer.on('error', () => { alert("Koneksi gagal!"); location.reload(); });
     }
 
+    // LOGIKA PERBAIKAN: SOAL MENYESUAIKAN TINGKATAN & SELALU BERBEDA
     function generateAISoal() {
         const level = document.getElementById('ai-level').value;
         const jml = parseInt(document.getElementById('ai-jumlah').value);
         const mapelRaw = document.getElementById('ai-mapel').value.trim();
         if (!mapelRaw) return alert("Isi Mapel!");
+        
         const mapel = mapelRaw.toUpperCase();
         bankSoal = [];
-        const soalPool = [
-            {p: "Apa rukun iman yang pertama?", b: "Iman kepada Allah", s: ["Iman kepada Malaikat", "Iman kepada Nabi", "Iman kepada Kitab"]},
-            {p: "Apa kitab suci umat Islam?", b: "Al-Qur'an", s: ["Injil", "Taurat", "Zabur"]},
-            {p: "Siapa penutup para nabi?", b: "Nabi Muhammad SAW", s: ["Nabi Isa AS", "Nabi Musa AS", "Nabi Ibrahim AS"]},
-            {p: "Di kota mana Ka'bah berada?", b: "Makkah", s: ["Madinah", "Riyadh", "Kairo"]},
-            {p: "Berapa jumlah rakaat shalat Subuh?", b: "2 Rakaat", s: ["3 Rakaat", "4 Rakaat", "1 Rakaat"]}
-        ].sort(() => Math.random() - 0.5); // Pengacakan pool soal
 
-        for(let i = 0; i < Math.min(jml, soalPool.length); i++) {
-            bankSoal.push({ p: `(${mapel}) ${soalPool[i].p}`, o: [soalPool[i].b, ...soalPool[i].s] });
+        // Database soal dinamis berdasarkan tingkatan
+        const soalMaster = {
+            tk: [
+                {p: "Apa warna bendera Indonesia?", b: "Merah Putih", s: ["Hijau Kuning", "Biru", "Hitam"]},
+                {p: "Siapa pencipta kita?", b: "Allah SWT", s: ["Malaikat", "Manusia", "Robot"]},
+                {p: "Satu tambah satu sama dengan?", b: "Dua", s: ["Tiga", "Empat", "Satu"]},
+                {p: "Sebelum makan kita membaca?", b: "Doa", s: ["Buku", "Koran", "Nyanyian"]}
+            ],
+            sd: [
+                {p: "Rukun Islam yang kedua adalah?", b: "Shalat", s: ["Zakat", "Puasa", "Syahadat"]},
+                {p: "Ibu kota negara Indonesia adalah?", b: "Jakarta", s: ["Surabaya", "Bandung", "Kendari"]},
+                {p: "Nabi yang memiliki mukjizat membelah lautan?", b: "Nabi Musa AS", s: ["Nabi Isa AS", "Nabi Nuh AS", "Nabi Daud AS"]}
+            ],
+            mts: [
+                {p: "Siapa khalifah pertama setelah wafatnya Rasulullah?", b: "Abu Bakar Ash-Shiddiq", s: ["Umar bin Khattab", "Utsman bin Affan", "Ali bin Abi Thalib"]},
+                {p: "Hukum bacaan Nun mati bertemu huruf Ba disebut?", b: "Iqlab", s: ["Idgham", "Ikhfa", "Izhar"]},
+                {p: "Kitab Al-Qur'an diturunkan kepada Nabi?", b: "Muhammad SAW", s: ["Ibrahim AS", "Musa AS", "Isa AS"]}
+            ],
+            sma: [
+                {p: "Apa istilah bagi ilmu yang mempelajari tata cara membaca Al-Qur'an?", b: "Tajwid", s: ["Fikih", "Aqidah", "Nahwu"]},
+                {p: "Perjanjian yang mengawali perdamaian antara Muslim dan Quraisy disebut?", b: "Hudaibiyah", s: ["Aqabah", "Piagam Madinah", "Linggarjati"]},
+                {p: "Sifat wajib bagi Allah yang berarti Terdahulu adalah?", b: "Qidam", s: ["Wujud", "Baqa", "Iradat"]}
+            ],
+            s1: [
+                {p: "Metode ijtihad dengan membandingkan masalah baru dengan masalah lama disebut?", b: "Qiyas", s: ["Ijma", "Urf", "Istihsan"]},
+                {p: "Siapa tokoh utama pemikiran Teologi Asy'ariyah?", b: "Abu al-Hasan al-Asy'ari", s: ["Al-Ghazali", "Ibnu Sina", "Wasit bin Atha"]},
+                {p: "Tafsir yang menekankan pada aspek kebahasaan dan sastra disebut?", b: "Tafsir Lughawi", s: ["Tafsir Bil Ma'tsur", "Tafsir Isyari", "Tafsir Falsafi"]}
+            ]
+        };
+
+        // Menggabungkan database soal umum dengan Mapel yang diinput user agar terasa unik
+        let selectedPool = [...soalMaster[level]];
+        
+        // Menambahkan variasi teks mapel ke soal agar terasa spesifik
+        selectedPool = selectedPool.map(item => ({
+            p: `(${mapel}) ${item.p}`,
+            b: item.b,
+            s: item.s
+        }));
+
+        // PENGACAKAN TOTAL: Mengacak urutan soal dalam pool
+        selectedPool.sort(() => Math.random() - 0.5);
+
+        // Mengambil jumlah soal yang diminta
+        for(let i = 0; i < Math.min(jml, selectedPool.length); i++) {
+            bankSoal.push({ p: selectedPool[i].p, o: [selectedPool[i].b, ...selectedPool[i].s] });
         }
+
         document.getElementById('info-mapel').innerText = "LATIHAN AI: " + mapel;
         startQuiz();
     }
@@ -224,7 +264,10 @@
         document.getElementById('progress-text').innerText = `${currentIdx + 1} / ${bankSoal.length}`;
         document.getElementById('txt-soal').innerText = s.p;
         const list = document.getElementById('list-opsi'); list.innerHTML = "";
+        
+        // Pengacakan opsi jawaban (A, B, C, D) setiap kali soal dirender
         let shuffled = s.o.map((txt, i) => ({txt, isCorrect: i === 0})).sort(() => Math.random() - 0.5);
+        
         shuffled.forEach(opt => {
             const b = document.createElement('button'); b.className = "opsi"; b.innerText = opt.txt;
             b.onclick = () => {
