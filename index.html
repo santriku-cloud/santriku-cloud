@@ -29,7 +29,7 @@
         th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
         th { background: #f3f4f6; }
         .list-eval { list-style: none; padding: 0; }
-        .list-eval li { background: white; color: #333; padding: 10px; margin: 5px 0; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; font-weight: bold; }
+        .list-eval li { background: white; color: #333; padding: 12px; margin: 8px 0; border-radius: 12px; cursor: pointer; display: flex; justify-content: space-between; font-weight: bold; border: 1px solid #ddd; }
     </style>
 </head>
 <body>
@@ -58,18 +58,18 @@
 
         <div class="card">
             <div class="badge" style="color: #a78bfa;">MENU 3: EVALUASI MURID</div>
-            <button class="btn btn-latihan" onclick="showView('latihan-setup')">CEK HASIL TUGAS</button>
+            <button class="btn btn-latihan" onclick="showView('latihan-setup')">CEK LAPORAN TUGAS</button>
         </div>
     </div>
 
     <div id="latihan-setup">
         <div class="card">
-            <h3>Evaluasi Guru</h3>
+            <h3>Login Evaluasi</h3>
             <input type="email" id="eval-email" placeholder="Email Guru">
-            <input type="text" id="eval-room" placeholder="ID Room Tugas">
-            <button class="btn btn-latihan" onclick="bukaEvaluasi()">LIHAT DAFTAR MURID</button>
-            <div id="eval-list-box" style="margin-top:15px; display:none;">
-                <h4 style="color:var(--accent)">Pilih Murid:</h4>
+            <input type="text" id="eval-room" placeholder="ID Room">
+            <button class="btn btn-latihan" onclick="bukaEvaluasi()">LIHAT HASIL</button>
+            <div id="eval-list-container" style="display:none; margin-top:15px;">
+                <h4 style="color:var(--accent)">Daftar Murid:</h4>
                 <ul id="list-eval-murid" class="list-eval"></ul>
             </div>
             <button class="btn btn-outline" onclick="location.reload()">KEMBALI</button>
@@ -79,8 +79,8 @@
     <div id="detail-murid-area">
         <div class="card" style="background:white; color:#333;">
             <h3 id="det-nama" style="color:var(--primary); margin-top:0"></h3>
-            <div id="det-konten" style="text-align:left; font-size:13px; max-height:300px; overflow-y:auto;"></div>
-            <button class="btn btn-outline" onclick="showView('latihan-setup')" style="color:black; border-color:#ccc; margin-top:15px">KEMBALI</button>
+            <div id="det-konten" style="text-align:left; font-size:13px; max-height:350px; overflow-y:auto;"></div>
+            <button class="btn btn-outline" onclick="showView('latihan-setup')" style="color:black; border-color:#ccc; margin-top:15px">TUTUP</button>
         </div>
     </div>
 
@@ -166,7 +166,7 @@
     const peerOptions = { config: { 'iceServers': [{ url: 'stun:stun.l.google.com:19302' }] } };
 
     let peer = null, conn = null, bankSoal = [], currentIdx = 0, statBenar = 0, startTime = 0;
-    let detailJawabanSession = [];
+    let detailSesi = []; // Menampung jawaban murid per sesi
 
     function showView(id) {
         document.querySelectorAll('.container > div').forEach(d => d.style.display = 'none');
@@ -197,7 +197,7 @@
     }
 
     function startQuiz() {
-        currentIdx = 0; statBenar = 0; startTime = Date.now(); detailJawabanSession = [];
+        currentIdx = 0; statBenar = 0; startTime = Date.now(); detailSesi = [];
         showView('play-area'); renderSoal();
     }
 
@@ -211,7 +211,7 @@
         shuffled.forEach(opt => {
             const b = document.createElement('button'); b.className = "opsi"; b.innerText = opt.txt;
             b.onclick = () => {
-                detailJawabanSession.push({ p: s.p, pilih: opt.txt, kunci: s.o[0], isBenar: opt.isCorrect });
+                detailSesi.push({ soal: s.p, pilih: opt.txt, kunci: s.o[0], b: opt.isCorrect });
                 if(opt.isCorrect) { statBenar++; confetti({ particleCount: 50 }); }
                 currentIdx++; renderSoal();
             };
@@ -226,8 +226,8 @@
             type: 'finish', 
             nama: document.getElementById('input-nama').value, 
             skor: skor, benar: statBenar, total: bankSoal.length, 
-            waktu: totalDetik,
-            detail: detailJawabanSession 
+            waktu: totalDetik, 
+            riwayat: detailSesi 
         });
         showView('result-area');
         document.getElementById('res-waktu').innerText = totalDetik + "s";
@@ -239,30 +239,30 @@
         document.getElementById('res-grade').innerText = skor >= 70 ? "JAYYID" : "BELAJAR LAGI";
     }
 
-    // --- FUNGSI EVALUASI MENU 3 ---
+    // --- FITUR EVALUASI ---
     function bukaEvaluasi() {
         const rid = document.getElementById('eval-room').value.toLowerCase();
-        if(!rid) return alert("Masukkan ID Room!");
-        const storageKey = `eval_db_${rid}`;
+        if(!rid) return alert("ID Room Kosong!");
+        const storageKey = `eval_data_${rid}`;
         const data = JSON.parse(localStorage.getItem(storageKey) || "[]");
         const listUl = document.getElementById('list-eval-murid');
         listUl.innerHTML = "";
-        if(data.length === 0) return alert("Data tidak ditemukan untuk ID ini.");
-        data.forEach((m, idx) => {
+        if(data.length === 0) return alert("Belum ada data murid.");
+        data.forEach((m) => {
             const li = document.createElement('li');
-            li.innerHTML = `<span>${m.nama}</span><span>Skor: ${m.skor}</span>`;
+            li.innerHTML = `<span>${m.nama}</span><span>${m.skor}</span>`;
             li.onclick = () => {
                 showView('detail-murid-area');
                 document.getElementById('det-nama').innerText = m.nama;
                 let h = "";
-                m.detail.forEach((d, i) => {
-                    h += `<p><b>${i+1}. ${d.p}</b><br>Jawab: <span style="color:${d.isBenar?'green':'red'}">${d.pilih}</span><br>Kunci: ${d.kunci}</p><hr>`;
+                m.riwayat.forEach((r, i) => {
+                    h += `<p><b>${i+1}. ${r.soal}</b><br>Jawab: <span style="color:${r.b?'green':'red'}">${r.pilih}</span><br>Kunci: ${r.kunci}</p><hr>`;
                 });
                 document.getElementById('det-konten').innerHTML = h;
             };
             listUl.appendChild(li);
         });
-        document.getElementById('eval-list-box').style.display = 'block';
+        document.getElementById('eval-list-container').style.display = 'block';
     }
 
     async function handleLogin() {
@@ -285,11 +285,11 @@
                 if(d.type === 'finish') {
                     const row = `<tr><td>${d.nama}</td><td>${d.skor}</td><td>${d.benar}/${d.total}</td><td>${d.waktu}s</td></tr>`;
                     document.getElementById('table-body').innerHTML += row;
-                    // Simpan ke local database untuk evaluasi
-                    const storageKey = `eval_db_${rid}`;
-                    let current = JSON.parse(localStorage.getItem(storageKey) || "[]");
-                    current.push(d);
-                    localStorage.setItem(storageKey, JSON.stringify(current));
+                    // Simpan data untuk menu evaluasi
+                    const storageKey = `eval_data_${rid}`;
+                    let db = JSON.parse(localStorage.getItem(storageKey) || "[]");
+                    db.push(d);
+                    localStorage.setItem(storageKey, JSON.stringify(db));
                 }
             });
         });
